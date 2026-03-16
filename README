@@ -1,0 +1,27 @@
+# Raw Python Image Processing Engine #
+
+A high-performance, command-line image editing tool built entirely from scratch in pure Python.
+**No OpenCV. No NumPy. Just raw math, matrix manipulations, and heavily optimized algorithmic design**
+
+This project was built to demonstrate a deep understanding of core computational photography algorithms and time/space complexity optimizations.
+
+## Key Features & Algorithmic Optimizations
+* **O(1) Adaptive Edge Detection:** Implements a Summed Area Table (Integral Image) algorithm,
+dropping the time complexity of local-mean thresholding to exactly O(N) for the entire image, regardless of block size.
+* **Lightning-Fast Pixel Mapping:** Uses pre-computed Look-Up Tables (LUTs) and C-optimized nested list comprehensions for O(1) quantization, grayscale conversion, and color manipulation.
+* **Optimized Matrix Convolutions:** Implements "clamp-to-edge" image padding to entirely remove innermost bounds-checking during kernel matrix dot-products.
+* **Sub-Pixel Geometry:** Features accurate Bilinear Interpolation for smooth, artifact-free image resizing.
+
+## Supported Operations
+1.  Grayscale Conversion
+2.  Matrix Convolutions (Gaussian Blur, Sharpen, Emboss)
+3.  Bilinear Interpolation Resizing
+4.  Matrix Transposition (90° Rotations)
+5.  Adaptive Thresholding (Edge Detection)
+6.  LUT Quantization
+7.  Sepia Filtering
+8.  Color Inversion & Brightness Adjustment
+9.  Geometric Flipping (Horizontal/Vertical)
+
+## Installation & Usage
+All you need is Python3.
