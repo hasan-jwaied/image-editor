@@ -362,7 +362,7 @@ def main():
         elif user_input == 2:
             # Blur the image using a kernel
             try:
-                kernel_size = int(input("Enter the size of the blur kernel (positive and odd number, it may take some time): "))
+                kernel_size = int(input("Enter the size of the blur kernel (positive and odd number (like 5), it may take some time): "))
                 if kernel_size % 2 == 0 or kernel_size < 1:
                     raise ValueError("Kernel size must be a positive odd number!")
 
