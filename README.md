@@ -12,10 +12,13 @@ dropping the time complexity of local-mean thresholding to exactly O(N) for the 
 * **Optimized Matrix Convolutions:** Implements "clamp-to-edge" image padding to entirely remove innermost bounds-checking during kernel matrix dot-products.
 
 ## Examples
-*(Check the files in this repository to see the input and output examples!)*
+### Original vs. Edge Detection
+![Original Image](my_img.png)
+![Edge Detection](examples/detect_edge.png)
+### Bot Sepia and Emboss Filters 
+![Sepia](examples/embossANDsepia.png)
 
 ## Installation & Usage
-
 1. Clone the repository:
    ```bash
    git clone https://github.com/hasan-jwaied/image-editor.git
