@@ -26,11 +26,6 @@ def load_image(image_filename: str, mode: str=RGB_CODE) -> Image:
     return image
 
 def show_image(image: Image) -> None:
-    """
-    Displays an image.
-    :param image: an image represented as a multi-dimensional list of the
-    format rows X cols X channels.
-    """
     __pil_image_from_lists(image).show()
 
 def save_image(image: Image, filename: str) -> None:
