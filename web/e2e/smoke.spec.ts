@@ -1,13 +1,18 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { settled, showPipeline } from './helpers'
 
 /** Phones start at a 1024px working size, laptops at 1600px (the 1428 × 968 sample fits as is). */
 const sampleSize = (isMobile: boolean) => (isMobile ? '1,024 × 694' : '1,428 × 968')
 
+/** The starting size also depends on the CPU, so tests fix the core count instead of using the runner's. */
+const withCores = (page: Page, n: number) =>
+  page.addInitScript((n) => Object.defineProperty(Navigator.prototype, 'hardwareConcurrency', { get: () => n }), n)
+
 test('nothing runs until the visitor chooses an operation', async ({ page, isMobile }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+  await withCores(page, 8)
   await page.goto('./')
   await settled(page)
   await showPipeline(page, isMobile)
@@ -27,6 +32,13 @@ test('nothing runs until the visitor chooses an operation', async ({ page, isMob
   await expect(page.locator('.steps > li')).toHaveCount(0)
   expect(new URL(page.url()).hash).toBe('')
   expect(errors).toEqual([])
+})
+
+test('a device with four cores or fewer starts at 1024px', async ({ page }) => {
+  await withCores(page, 4)
+  await page.goto('./')
+  await settled(page)
+  await expect(page.locator('.probe')).toContainText('1,024 × 694')
 })
 
 test('recipes, undo, and a shared link that applies once', async ({ page, context, isMobile }) => {
