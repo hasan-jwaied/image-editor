@@ -170,7 +170,7 @@ export function Viewer(props: Props) {
   const pixel = probe && shown ? Array.from(shown.rgba.subarray((probe.y * shown.width + probe.x) * 4, (probe.y * shown.width + probe.x) * 4 + 3)) : null
 
   return (
-    <div className="viewer">
+    <div className="viewer panel">
       <div className="viewer-bar">
         <div className="segmented sm" role="radiogroup" aria-label={t('viewer.result')}>
           <button type="button" role="radio" aria-checked={mode === 'result'} className={mode === 'result' ? 'on' : ''} onClick={() => setMode('result')}>

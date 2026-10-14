@@ -1,30 +1,38 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" class="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Pixel Lab: image processing from first principles</title>
+    <title>Pixel Lab: image processing from first principles · Hasan Jwaied</title>
     <meta
       name="description"
-      content="Nineteen image-processing algorithms written from scratch in Python and TypeScript, verified pixel for pixel, with interactive explanations. Runs entirely in your browser."
+      content="Nineteen image-processing algorithms, including seam carving, Canny edges and dithering, written from scratch in Python and TypeScript, verified pixel for pixel and explained interactively. Runs entirely in your browser."
     />
-    <meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)" />
+    <meta name="author" content="Hasan Jwaied" />
+    <link rel="canonical" href="%VITE_CANONICAL_URL%" />
+    <meta name="theme-color" content="#f5f5f7" />
+    <meta property="og:type" content="website" />
     <meta property="og:title" content="Pixel Lab: image processing from first principles" />
     <meta property="og:description" content="Seam carving, Canny edges, dithering and more, hand-written and explained. Your photos never leave your device." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="./og.jpg" />
+    <meta property="og:url" content="%VITE_CANONICAL_URL%" />
+    <meta property="og:image" content="%VITE_OG_IMAGE%" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
-    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="%BASE_URL%icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
     <script>
-      // Apply a stored theme before first paint to avoid a flash.
+      // Same key and class as the portfolio (next-themes, default light), applied
+      // before first paint so there is no flash. Language is the lab's own.
       try {
-        var t = localStorage.getItem('pixel-lab:theme')
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+        var t = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'
+        var root = document.documentElement
+        root.className = t
+        root.style.colorScheme = t
+        document.querySelector('meta[name="theme-color"]').content = t === 'dark' ? '#000000' : '#f5f5f7'
         var l = localStorage.getItem('pixel-lab:lang')
-        if (l === 'ar' || l === 'he') { document.documentElement.lang = l; document.documentElement.dir = 'rtl' }
+        if (l === 'ar' || l === 'he') { root.lang = l; root.dir = 'rtl' }
       } catch (e) {}
     </script>
   </head>

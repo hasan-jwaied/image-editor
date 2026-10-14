@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { Article } from './components/Article'
 import { Explain } from './components/explain/Explain'
 import { Header } from './components/Header'
+import { Back } from './components/Icons'
 import { Library } from './components/Library'
 import { PipelinePanel } from './components/PipelinePanel'
 import { StepParams } from './components/StepDetail'
@@ -11,6 +12,7 @@ import { useMediaQuery } from './hooks/useMediaQuery'
 import { useProcessor } from './hooks/useProcessor'
 import { useTheme } from './hooks/useTheme'
 import { useI18n } from './i18n'
+import { HOME_URL } from './lib/config'
 import { DecodeError, decodeImage } from './lib/decode'
 import { frameOf } from './lib/frame'
 import { opLabel } from './lib/labels'
@@ -232,13 +234,15 @@ export function App() {
 
   return (
     <>
+      <div className="ambient" aria-hidden="true" />
       <Header theme={theme} onToggleTheme={toggle} />
       <main id="top">
         <section className="hero">
+          <p className="hero-eyebrow">{t('app.tagline')}</p>
           <h1>{t('hero.title')}</h1>
           <p className="hero-body">{t('hero.body')}</p>
           <div className="presets" role="group" aria-label={t('hero.try')}>
-            <span className="eyebrow">{t('hero.try')}</span>
+            <span className="presets-label">{t('hero.try')}</span>
             {PRESETS.map((p) => (
               <button key={p.id} type="button" className="chip-btn" onClick={() => applyPreset(p.id)}>
                 {t(p.label)}
@@ -321,6 +325,11 @@ export function App() {
         <Article />
       </main>
       <footer className="footer">
+        {HOME_URL && (
+          <a className="footer-back" href={HOME_URL}>
+            <Back width={14} height={14} /> {t('footer.back')}
+          </a>
+        )}
         <p>{t('footer.built')}</p>
         <p className="small muted">{t('footer.credits')}</p>
       </footer>

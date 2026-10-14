@@ -7,6 +7,17 @@ export const en = {
     'Nineteen algorithms, implemented twice: a readable Python reference and a fast TypeScript engine running in your browser. Automated tests prove both produce the same pixels. Your photos never leave your device.',
   'hero.try': 'Try a recipe',
 
+  'nav.back': 'Portfolio',
+  'how.s1.label': 'Performance',
+  'how.s2.label': 'Verification',
+  'how.s3.label': 'Architecture',
+  'how.s4.label': 'Benchmarks',
+  'how.s5.label': 'Trust',
+  'how.hl.blur': '15 × 15 blur: v1 script vs. now',
+  'how.hl.golden': 'golden cases, zero differing pixels',
+  'how.hl.algos': 'algorithms, each written twice',
+  'how.hl.langs': 'languages, right-to-left included',
+  'how.chartNoteV1': 'For comparison, the original v1 script needed {v1} s for the 15 × 15 blur.',
   'nav.lab': 'Lab',
   'nav.how': 'How it’s built',
   'nav.github': 'Source on GitHub',
@@ -277,11 +288,14 @@ export const en = {
   'how.s5.a11y': 'Keyboard accessible, in English, Arabic and Hebrew (right-to-left included).',
   'how.s5.tests':
     'Continuous integration runs property-based tests (Hypothesis), the golden cross-check and strict type checking in both languages on every push.',
+  'how.ctaTitle': 'Want to see the code?',
+  'how.ctaBody': 'Both engines, the tests, the benchmarks and the full commit history are on GitHub.',
   'how.cta': 'Read the code on GitHub',
   'how.cliTitle': 'Or use it from the terminal',
 
   'footer.credits':
     'Sample photos: Broadway Tower by Newton2, CC BY 2.5, via Wikimedia Commons · Buzz Aldrin on the Moon by Neil Armstrong, NASA, public domain · The Great Wave off Kanagawa by Katsushika Hokusai, public domain.',
+  'footer.back': 'Back to all projects',
   'footer.built': 'Designed and built by Hasan Jwaied.',
   'error.decode': 'This file could not be opened as an image.',
   'error.tooLarge': 'This image is too large ({mp} megapixels). Try one under 50 megapixels.',
