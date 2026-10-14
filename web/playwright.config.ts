@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 90_000,
   workers: process.env.CI ? 1 : 2,
+  // On GitHub, failures are also posted as annotations on the commit and pull request.
+  reporter: process.env.CI ? [['github'], ['list']] : 'list',
   // E2E_BASE_URL runs the same suite against another deployment, e.g. the
   // portfolio's copy: E2E_BASE_URL=http://localhost:3000/lab/ npx playwright test
   use: { baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:4173/', trace: 'retain-on-failure' },
