@@ -2,7 +2,7 @@
 
 # Pixel Lab
 
-Nineteen image-processing algorithms (seam carving, Canny edges, Floyd–Steinberg dithering and more) written from scratch twice: a pure-Python reference and a TypeScript engine that runs in the browser. Tests check that both produce the same pixels.
+Nineteen image processing algorithms (seam carving, Canny edges, error diffusion dithering and more) written from scratch twice: a pure Python reference and a TypeScript engine that runs in the browser. Tests check that both produce the same pixels.
 
 [Live demo](https://hasan-jwaied.github.io/image-editor/) · [How it's built](https://hasan-jwaied.github.io/image-editor/#how) · [Python CLI](#python-reference-and-cli)
 
@@ -16,7 +16,7 @@ Nineteen image-processing algorithms (seam carving, Canny edges, Floyd–Steinbe
 
 ## Features
 
-- Each operation has an explainer: the pixel neighbourhood and kernel under the pointer, the summed-area table lookups, Canny's four stages, the removed seams.
+- Each operation has an explainer: the pixel neighborhood and kernel under the pointer, the summed area table lookups, Canny's four stages, the removed seams.
 - A 15×15 blur went from 22.4 s in the first version to 0.29 s in pure Python and 14 ms in TypeScript. You can race the blur algorithms on your own machine.
 - Python generates 93 golden cases and the TypeScript engine has to match every pixel.
 - Everything runs locally: no server, no uploads, no analytics. Works offline and on phones, in English and Hebrew.
@@ -36,7 +36,7 @@ Nineteen image-processing algorithms (seam carving, Canny edges, Floyd–Steinbe
 | | Equalize histogram | CDF remapping of luma in YCbCr, so colors don't shift | O(N) |
 | | Sepia | 3×3 color matrix | O(N) |
 | Transform | Flip, rotate | Index transposition (lossless) | O(N) |
-| | Resize | Bilinear interpolation, pixel-centre aligned | O(N) |
+| | Resize | Bilinear interpolation, aligned to pixel centers | O(N) |
 | Blur & sharpen | Box blur | Summed-area table: 4 lookups per pixel, any radius | O(N) |
 | | Gaussian blur | Separable: horizontal then vertical 1-D pass | O(N·σ) |
 | | Sharpen | Unsharp mask | O(N·σ) |
@@ -45,7 +45,7 @@ Nineteen image-processing algorithms (seam carving, Canny edges, Floyd–Steinbe
 | | Canny | Smooth → gradient → non-maximum suppression → hysteresis | O(N·σ) |
 | | Ink sketch | Adaptive threshold against a summed-area-table local mean | O(N) |
 | Stylize | Posterize | Uniform quantization | O(N) |
-| | Dither | Floyd–Steinberg error diffusion | O(N) |
+| | Dither | Floyd and Steinberg error diffusion | O(N) |
 | Content-aware | Seam carving | Dynamic programming over a dual-gradient energy map | O(N·seams) |
 
 ## How it fits together
@@ -74,7 +74,7 @@ Box blur of a 1000×678 grayscale image, best of several runs, CPython 3.10 and 
 | 1 (3×3) | 1.45 s | 0.59 s | 0.45 s | **0.28 s** | 26 ms | **17 ms** |
 | 4 (9×9) | 8.60 s | 4.50 s | 1.00 s | **0.27 s** | 52 ms | **14 ms** |
 | 7 (15×15) | 22.4 s | 12.4 s | 1.65 s | **0.29 s** | 80 ms | **14 ms** |
-| 20 (41×41) | — | — | 4.27 s | **0.29 s** | 209 ms | **13 ms** |
+| 20 (41×41) | not run | not run | 4.27 s | **0.29 s** | 209 ms | **13 ms** |
 
 Saving went from 3.0 s to 24 ms: v1 called `putpixel` once per pixel, v2 hands Pillow one buffer per channel. Per-operation timings are in [`bench/`](bench).
 
@@ -121,12 +121,12 @@ save_image(ops.seam_carve(img, width_percent=30, height_percent=0), "narrow.png"
 | Static checks | ruff, mypy `--strict` | ESLint, `tsc` strict |
 | End-to-end | | Playwright on desktop and mobile viewports |
 
-CI runs everything on Python 3.10–3.13; `main` deploys to GitHub Pages.
+CI runs everything on Python 3.10 to 3.13; `main` deploys to GitHub Pages.
 
 ## Project layout
 
 ```
-python/            pure-Python reference engine, CLI, tests, spec/golden/benchmark scripts
+python/            pure Python reference engine, CLI, tests, spec/golden/benchmark scripts
   src/pixel_lab/   image.py · io.py · registry.py · recipe.py · cli.py · ops/*.py
 web/               React + TypeScript app
   src/engine/      TypeScript port of every operation (no dependencies)
@@ -148,7 +148,7 @@ bench/             benchmark results used by the README and the site
 
 Sample photos: *Broadway Tower* by Newton2, CC BY 2.5, via Wikimedia Commons · *Buzz Aldrin on the Moon* by Neil Armstrong, NASA, public domain · *The Great Wave off Kanagawa* by Katsushika Hokusai, public domain. Seam carving follows Avidan & Shamir, *Seam Carving for Content-Aware Image Resizing* (SIGGRAPH 2007).
 
-Pixel Lab started as a university exercise: a menu-driven script that applied one filter at a time.
+Pixel Lab started as a university exercise: a script with a text menu that applied one filter at a time.
 
 ## License
 

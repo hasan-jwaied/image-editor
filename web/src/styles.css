@@ -27,7 +27,7 @@
   --checker-a: #ececf0;
   --checker-b: #e2e2e7;
 
-  /* colour-blind safe for three series */
+  /* color-blind safe for three series */
   --chart-surface: #fbfbfd;
   --grid: rgb(0 0 0 / 0.08);
   --axis: rgb(0 0 0 / 0.2);

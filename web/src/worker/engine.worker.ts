@@ -88,7 +88,7 @@ function race(stepIndex: number) {
   return { image: [w, h] as [number, number], radii, ms }
 }
 
-function normalised(values: Int32Array): Uint8Array {
+function normalized(values: Int32Array): Uint8Array {
   let max = 1
   for (const v of values) if (v > max) max = v
   const out = new Uint8Array(values.length)
@@ -119,7 +119,7 @@ function handle(id: number, req: Request): unknown {
     case 'seamTrace': {
       const input = inputOf(req.stepIndex)
       const { seams } = seamCarveTrace(input, req.widthPercent, 0, true)
-      const energy = normalised(energyMap(luma(input), input.width, input.height))
+      const energy = normalized(energyMap(luma(input), input.width, input.height))
       return { input, seams, energy }
     }
     case 'race':

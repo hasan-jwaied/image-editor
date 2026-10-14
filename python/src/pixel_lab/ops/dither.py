@@ -4,7 +4,7 @@ from ..image import Channel, Image, map_color
 
 
 def _dither_channel(channel: Channel, levels: int) -> Channel:
-    """Spread each pixel's rounding error to its unvisited neighbours:
+    """Spread each pixel's rounding error to its unvisited neighbors:
 
            *    7/16
     3/16  5/16  1/16

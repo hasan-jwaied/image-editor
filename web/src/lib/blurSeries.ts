@@ -4,7 +4,7 @@ import type { MessageKey } from '../i18n/en'
 type T = (key: MessageKey) => string
 type Timings = { sat: (number | null)[]; separable: (number | null)[]; naive: (number | null)[] }
 
-// At most three series: a fourth colour isn't reliably distinguishable for colour-blind readers.
+// At most three series: a fourth color isn't reliably distinguishable for color-blind readers.
 export const blurSeries = (t: T, ms: Timings): Series[] => [
   { id: 'sat', label: t('explain.raceSat'), note: 'O(N)', color: 'var(--series-1)', values: ms.sat },
   {

@@ -24,7 +24,7 @@ def rotate(image: Image, direction: str) -> Image:
 
 
 def _sample_positions(src: int, dst: int) -> tuple[list[int], list[int], list[float]]:
-    """Two source indices and a blend weight per destination index, pixel-centre aligned."""
+    """Two source indices and a blend weight per destination index, pixel-center aligned."""
     ratio = src / dst
     lo, hi, frac = [], [], []
     for i in range(dst):

@@ -191,7 +191,7 @@ export function LineChart({ title, x, xLabel, yLabel, series: input, formatY, he
             {series.map((s) => (
               <div key={s.id} className="tooltip-row">
                 <span className="line-key" style={{ background: s.color }} />
-                <strong>{s.values[active] === null ? '—' : formatY(s.values[active]!)}</strong>
+                <strong>{s.values[active] === null ? t('explain.notMeasured') : formatY(s.values[active]!)}</strong>
                 <span className="muted">{s.label}</span>
               </div>
             ))}
@@ -224,7 +224,7 @@ export function LineChart({ title, x, xLabel, yLabel, series: input, formatY, he
               <tr key={v}>
                 <th scope="row">{num(v, 0)}</th>
                 {series.map((s) => (
-                  <td key={s.id}>{s.values[i] === null ? '—' : formatY(s.values[i]!)}</td>
+                  <td key={s.id}>{s.values[i] === null ? t('explain.notMeasured') : formatY(s.values[i]!)}</td>
                 ))}
               </tr>
             ))}

@@ -97,7 +97,7 @@ def box_blur(image: Image, radius: int) -> Image:
 
 
 def gaussian_kernel(sigma: float) -> list[float]:
-    """Normalised 1-D Gaussian weights covering +-3 sigma."""
+    """Normalized 1-D Gaussian weights covering +-3 sigma."""
     radius = max(1, math.ceil(3 * sigma))
     weights = [math.exp(-(i * i) / (2 * sigma * sigma)) for i in range(-radius, radius + 1)]
     total = 0.0

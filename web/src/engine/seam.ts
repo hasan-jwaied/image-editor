@@ -58,7 +58,7 @@ function findSeamStrided(
       m[row] = energy[row] + m[prev]
       continue
     }
-    // x = 0: no left neighbour
+    // x = 0: no left neighbor
     let up = m[prev]
     let right = m[prev + 1]
     m[row] = energy[row] + (up < right ? up : right)
@@ -70,7 +70,7 @@ function findSeamStrided(
       if (right < best) best = right
       m[row + x] = energy[row + x] + best
     }
-    // x = w - 1: no right neighbour
+    // x = w - 1: no right neighbor
     m[row + w - 1] = energy[row + w - 1] + (up < right ? up : right)
   }
   const last = (h - 1) * stride

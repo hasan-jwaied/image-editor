@@ -37,7 +37,7 @@ export function KernelInspector({
   const size = kernels[0].kernel.length
   const pad = size >> 1
   const flipped = kernels.map((k) => k.kernel.map((row) => row.slice().reverse()).reverse())
-  const neighbourhood = p
+  const neighborhood = p
     ? Array.from({ length: size }, (_, dy) =>
         Array.from({ length: size }, (_, dx) => {
           const yy = Math.min(h - 1, Math.max(0, p.y + dy - pad))
@@ -46,8 +46,8 @@ export function KernelInspector({
         }),
       )
     : null
-  const sums = neighbourhood
-    ? flipped.map((k) => k.reduce((acc, row, dy) => row.reduce((a, wt, dx) => a + wt * neighbourhood[dy][dx], acc), 0))
+  const sums = neighborhood
+    ? flipped.map((k) => k.reduce((acc, row, dy) => row.reduce((a, wt, dx) => a + wt * neighborhood[dy][dx], acc), 0))
     : []
   const out = combine
     ? sums.length
@@ -62,10 +62,10 @@ export function KernelInspector({
       <p className="small muted">{p ? t('explain.at', { x: p.x, y: p.y }) : t(hint)}</p>
       <div className="kernel-grids" dir="ltr">
         <div>
-          <div className="grid-label small">{t('explain.neighbourhood')}</div>
+          <div className="grid-label small">{t('explain.neighborhood')}</div>
           <div className="matrix" style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}>
             {Array.from({ length: size * size }, (_, i) => {
-              const v = neighbourhood?.[Math.floor(i / size)][i % size]
+              const v = neighborhood?.[Math.floor(i / size)][i % size]
               return (
                 <span
                   key={i}

@@ -179,7 +179,7 @@ _OPERATIONS = [
               "Adaptive threshold: black where a pixel is darker than its local mean.",
               "O(N)", ops.adaptive_threshold,
               (Param("blur_radius", "int", 1, "Smoothing", 0, 20, 1, unit="px"),
-               Param("block_radius", "int", 8, "Neighbourhood", 1, 100, 1, unit="px"),
+               Param("block_radius", "int", 8, "Neighborhood", 1, 100, 1, unit="px"),
                Param("offset", "float", 10.0, "Sensitivity", -50, 50, 0.5))),
     # stylize
     Operation("posterize", "Posterize", "stylize",
@@ -187,7 +187,7 @@ _OPERATIONS = [
               "O(N)", ops.posterize,
               (Param("levels", "int", 4, "Levels", 2, 64, 1),)),
     Operation("dither", "Dither", "stylize",
-              "Floyd-Steinberg: quantize, then diffuse each pixel's error to its neighbours.",
+              "Floyd-Steinberg: quantize, then diffuse each pixel's error to its neighbors.",
               "O(N)", ops.dither,
               (Param("levels", "int", 2, "Levels per channel", 2, 16, 1),)),
     # content-aware

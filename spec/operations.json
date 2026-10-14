@@ -324,7 +324,7 @@
         {
           "name": "block_radius",
           "type": "int",
-          "label": "Neighbourhood",
+          "label": "Neighborhood",
           "default": 8,
           "min": 1,
           "max": 100,
@@ -364,7 +364,7 @@
       "id": "dither",
       "label": "Dither",
       "category": "stylize",
-      "summary": "Floyd-Steinberg: quantize, then diffuse each pixel's error to its neighbours.",
+      "summary": "Floyd-Steinberg: quantize, then diffuse each pixel's error to its neighbors.",
       "complexity": "O(N)",
       "params": [
         {

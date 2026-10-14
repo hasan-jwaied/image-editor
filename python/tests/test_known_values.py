@@ -18,9 +18,9 @@ def test_sepia_on_white() -> None:
     assert [p[0][0] for p in ops.sepia(white).color] == [255, 255, 239]
 
 
-def test_bilinear_upscale_interpolates_between_neighbours() -> None:
+def test_bilinear_upscale_interpolates_between_neighbors() -> None:
     out = ops.resize_to(gray([[0, 100]]), 4, 1)
-    # pixel-centre sample positions: 0 (clamped), 0.25, 0.75, 1 (clamped)
+    # pixel-center sample positions: 0 (clamped), 0.25, 0.75, 1 (clamped)
     assert out.color[0] == [[0, 25, 75, 100]]
 
 
@@ -31,7 +31,7 @@ def test_rotate_cw_moves_top_left_to_top_right() -> None:
 
 
 def test_convolution_flips_the_kernel() -> None:
-    # A kernel with a single 1 to the right of centre. As a true convolution
+    # A kernel with a single 1 to the right of center. As a true convolution
     # (flipped) it samples the pixel to the LEFT, shifting the image right.
     img = gray([[10, 20, 30, 40]])
     out = ops.convolve(img, "custom", [0, 0, 0, 0, 0, 1, 0, 0, 0])
@@ -68,7 +68,7 @@ def test_equalization_lut_spreads_two_levels() -> None:
     assert lut[100] == 0 and lut[110] == 255
 
 
-def test_gaussian_kernel_is_normalised_and_symmetric() -> None:
+def test_gaussian_kernel_is_normalized_and_symmetric() -> None:
     k = ops.gaussian_kernel(1.5)
     assert len(k) == 2 * math.ceil(4.5) + 1
     assert math.isclose(sum(k), 1.0)

@@ -12,7 +12,7 @@ def histogram(channel: Channel) -> list[int]:
 
 
 def equalization_lut(counts: list[int]) -> list[int]:
-    """Map each level through the normalised cumulative histogram."""
+    """Map each level through the normalized cumulative histogram."""
     total = sum(counts)
     cdf, running = [], 0
     for c in counts:
@@ -25,7 +25,7 @@ def equalization_lut(counts: list[int]) -> list[int]:
 
 
 def equalize(image: Image) -> Image:
-    """Equalise luma only (full-range YCbCr), so colors don't shift."""
+    """Equalize luma only (full-range YCbCr), so colors don't shift."""
     if image.is_gray:
         lut = equalization_lut(histogram(image.color[0]))
         return Image([[[lut[v] for v in row] for row in image.color[0]]], image.alpha)
