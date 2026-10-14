@@ -9,7 +9,7 @@ import { clampedIndex, integralImage, roundHalfEven } from './math'
 
 export type Kernel = number[][]
 
-export const KERNEL_PRESETS: Record<string, Kernel> = {
+const KERNEL_PRESETS: Record<string, Kernel> = {
   sharpen: [
     [0, -1, 0],
     [-1, 5, -1],
@@ -34,7 +34,7 @@ export const KERNEL_PRESETS: Record<string, Kernel> = {
 }
 
 /** True convolution (kernel flipped), clamp-to-edge borders. O(N·k²). */
-export function convolveChannel(p: Uint8Array, w: number, h: number, kernel: Kernel): Uint8Array {
+function convolveChannel(p: Uint8Array, w: number, h: number, kernel: Kernel): Uint8Array {
   const size = kernel.length
   if (size % 2 === 0 || kernel.some((row) => row.length !== size)) {
     throw new Error('kernel must be square with an odd size')
@@ -64,7 +64,7 @@ export function convolveChannel(p: Uint8Array, w: number, h: number, kernel: Ker
   return out
 }
 
-export function kernelFromWeights(weights: number[]): Kernel {
+function kernelFromWeights(weights: number[]): Kernel {
   const size = Math.round(Math.sqrt(weights.length))
   if (size * size !== weights.length || size % 2 === 0) {
     throw new Error('custom kernel needs an odd square number of weights (9, 25, ...)')
@@ -88,7 +88,12 @@ export function convolve(img: Img, preset: string, weights?: number[]): Img {
 export function boxBlurNaiveChannel(p: Uint8Array, w: number, h: number, radius: number): Uint8Array {
   const size = 2 * radius + 1
   const wt = 1 / (size * size)
-  return convolveChannel(p, w, h, Array.from({ length: size }, () => new Array(size).fill(wt)))
+  return convolveChannel(
+    p,
+    w,
+    h,
+    Array.from({ length: size }, () => new Array(size).fill(wt)),
+  )
 }
 
 /** Window mean via a summed-area table: 4 lookups per pixel, any radius. O(N). */

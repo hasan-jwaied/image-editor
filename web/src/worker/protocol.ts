@@ -24,7 +24,7 @@ export type Request =
   | { type: 'setSource'; image: Img }
   | { type: 'run'; steps: Step[] }
   | { type: 'cannyStages'; stepIndex: number; params: Params }
-  | { type: 'seamTrace'; stepIndex: number; params: Params }
+  | { type: 'seamTrace'; stepIndex: number; widthPercent: number }
   | { type: 'race'; stepIndex: number }
 
 export type ResponseFor<R extends Request> = R extends { type: 'run' }

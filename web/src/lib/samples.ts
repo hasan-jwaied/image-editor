@@ -16,7 +16,7 @@ export const SAMPLES: Sample[] = [
   { id: 'wave', label: 'sample.wave', src: url('samples/wave.webp'), thumb: url('samples/wave-thumb.webp') },
 ]
 
-export interface Preset {
+interface Preset {
   id: string
   label: MessageKey
   steps: { op: string; params?: Params }[]
@@ -34,7 +34,11 @@ export const PRESETS: Preset[] = [
   {
     id: 'comic',
     label: 'recipe.comic',
-    steps: [{ op: 'gaussian_blur', params: { sigma: 1.2 } }, { op: 'posterize', params: { levels: 5 } }, { op: 'sharpen' }],
+    steps: [
+      { op: 'gaussian_blur', params: { sigma: 1.2 } },
+      { op: 'posterize', params: { levels: 5 } },
+      { op: 'sharpen' },
+    ],
   },
   {
     id: 'vintage',

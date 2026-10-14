@@ -166,7 +166,7 @@ function transpose<T extends Buffer>(p: T, w: number, h: number): T {
   return out
 }
 
-export interface SeamTrace {
+interface SeamTrace {
   image: Img
   /** Every removed vertical seam, as original-image column per row. */
   seams: Int32Array[]
@@ -186,7 +186,18 @@ export function seamCarveTrace(img: Img, widthPercent: number, heightPercent: nu
 
   if (columns > 0) {
     const index = trace ? Int32Array.from({ length: width * height }, (_, i) => i % width) : null
-    w = carveColumns(planes, gray, index, width, width, height, columns, trace ? (s) => seams.push(s) : null, 0, columns / total)
+    w = carveColumns(
+      planes,
+      gray,
+      index,
+      width,
+      width,
+      height,
+      columns,
+      trace ? (s) => seams.push(s) : null,
+      0,
+      columns / total,
+    )
     planes = planes.map((p) => compact(p, width, w, h))
     gray = compact(gray, width, w, h)
   }

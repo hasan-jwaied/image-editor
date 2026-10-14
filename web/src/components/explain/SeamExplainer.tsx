@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Img } from '../../engine/image'
-import type { Params } from '../../engine/spec'
+import { useWorkerResult } from '../../hooks/useWorkerResult'
 import { useI18n } from '../../i18n'
 import { frameOf, grayFrame } from '../../lib/frame'
 import type { EngineClient } from '../../worker/client'
-import type { SeamTraceResult } from '../../worker/protocol'
 import type { Frame, Overlay } from '../Viewer'
 import { Play } from '../Icons'
 
-const SEAM_RGB = [227, 73, 72] // red series step; marks are the only colored thing here
+const SEAM_RGB = [227, 73, 72] // red: stands out against any photo
 
 function paintSeams(base: Frame, seams: Int32Array[], count: number): Frame {
   const rgba = new Uint8ClampedArray(base.rgba)
@@ -29,43 +28,35 @@ function paintSeams(base: Frame, seams: Int32Array[], count: number): Frame {
 export function SeamExplainer({
   client,
   stepIndex,
-  params,
+  widthPercent,
   input,
   overlay,
   setOverlay,
 }: {
   client: EngineClient
   stepIndex: number
-  params: Params
+  widthPercent: number
   input: Img
   overlay: Overlay | null
   setOverlay: (o: Overlay | null) => void
 }) {
   const { t, num } = useI18n()
-  const [trace, setTrace] = useState<SeamTraceResult | null>(null)
+  const trace = useWorkerResult(
+    () => client.request({ type: 'seamTrace', stepIndex, widthPercent }),
+    `${stepIndex}:${widthPercent}`,
+    input,
+    150,
+  )
   const animRef = useRef(0)
   const seamLabel = t('explain.seamOverlay')
   const energyLabel = t('explain.seamEnergy')
 
-  useEffect(() => {
-    let alive = true
-    setTrace(null)
-    const timer = window.setTimeout(() => {
-      client
-        .request({ type: 'seamTrace', stepIndex, params })
-        .then((r) => alive && setTrace(r))
-        .catch(() => alive && setTrace(null))
-    }, 150)
-    return () => {
-      alive = false
-      window.clearTimeout(timer)
-    }
-  }, [client, stepIndex, params.width_percent, input]) // eslint-disable-line react-hooks/exhaustive-deps
-
   useEffect(() => () => cancelAnimationFrame(animRef.current), [])
 
-  const showSeams = () => trace && setOverlay({ frame: paintSeams(frameOf(trace.input), trace.seams, trace.seams.length), label: seamLabel })
-  const showEnergy = () => trace && setOverlay({ frame: grayFrame(trace.energy, trace.input.width, trace.input.height), label: energyLabel })
+  const showSeams = () =>
+    trace && setOverlay({ frame: paintSeams(frameOf(trace.input), trace.seams, trace.seams.length), label: seamLabel })
+  const showEnergy = () =>
+    trace && setOverlay({ frame: grayFrame(trace.energy, trace.input.width, trace.input.height), label: energyLabel })
 
   const replay = () => {
     if (!trace) return
@@ -86,10 +77,22 @@ export function SeamExplainer({
   return (
     <section>
       <div className="button-row">
-        <button type="button" className={`btn sm${overlay?.label === seamLabel ? ' on' : ''}`} onClick={() => (overlay?.label === seamLabel ? setOverlay(null) : showSeams())} disabled={!trace} aria-pressed={overlay?.label === seamLabel}>
+        <button
+          type="button"
+          className={`btn sm${overlay?.label === seamLabel ? ' on' : ''}`}
+          onClick={() => (overlay?.label === seamLabel ? setOverlay(null) : showSeams())}
+          disabled={!trace}
+          aria-pressed={overlay?.label === seamLabel}
+        >
           {t('explain.seamShow')}
         </button>
-        <button type="button" className={`btn sm${overlay?.label === energyLabel ? ' on' : ''}`} onClick={() => (overlay?.label === energyLabel ? setOverlay(null) : showEnergy())} disabled={!trace} aria-pressed={overlay?.label === energyLabel}>
+        <button
+          type="button"
+          className={`btn sm${overlay?.label === energyLabel ? ' on' : ''}`}
+          onClick={() => (overlay?.label === energyLabel ? setOverlay(null) : showEnergy())}
+          disabled={!trace}
+          aria-pressed={overlay?.label === energyLabel}
+        >
           {energyLabel}
         </button>
         <button type="button" className="btn sm" onClick={replay} disabled={!trace || !trace.seams.length}>

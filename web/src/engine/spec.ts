@@ -4,7 +4,7 @@
  */
 import raw from '../../../spec/operations.json'
 
-export type ParamType = 'int' | 'float' | 'enum' | 'kernel'
+type ParamType = 'int' | 'float' | 'enum' | 'kernel'
 export type ParamValue = number | string | number[]
 export type Params = Record<string, ParamValue>
 
@@ -29,27 +29,35 @@ export interface OpSpec {
   params: ParamSpec[]
 }
 
-export interface Spec {
+interface Spec {
   version: number
   categories: { id: string; label: string }[]
   operations: OpSpec[]
 }
 
 export const SPEC = raw as Spec
-export const OP_SPECS: Record<string, OpSpec> = Object.fromEntries(SPEC.operations.map((op) => [op.id, op]))
+// No prototype: an id like "__proto__" from a shared link must not resolve to anything.
+const OP_SPECS: Record<string, OpSpec | undefined> = Object.assign(
+  Object.create(null) as Record<string, OpSpec>,
+  Object.fromEntries(SPEC.operations.map((op) => [op.id, op])),
+)
+
+export const isOp = (id: string) => OP_SPECS[id] !== undefined
+
+export function opSpec(id: string): OpSpec {
+  const spec = OP_SPECS[id]
+  if (!spec) throw new Error(`unknown operation ${id}`)
+  return spec
+}
 
 export function defaultParams(opId: string): Params {
-  const spec = OP_SPECS[opId]
-  if (!spec) throw new Error(`unknown operation ${opId}`)
-  return Object.fromEntries(
-    spec.params.map((p) => [p.name, Array.isArray(p.default) ? [...p.default] : p.default]),
-  )
+  const spec = opSpec(opId)
+  return Object.fromEntries(spec.params.map((p) => [p.name, Array.isArray(p.default) ? [...p.default] : p.default]))
 }
 
 /** Validate and fill defaults, with the same rules as Python's Param.coerce. */
 export function resolveParams(opId: string, raw: Record<string, unknown> = {}): Params {
-  const spec = OP_SPECS[opId]
-  if (!spec) throw new Error(`unknown operation ${opId}`)
+  const spec = opSpec(opId)
   const known = new Set(spec.params.map((p) => p.name))
   for (const key of Object.keys(raw)) {
     if (!known.has(key)) throw new Error(`${opId}: unknown parameter ${key}`)

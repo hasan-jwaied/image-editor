@@ -17,14 +17,20 @@ export function Curve({ lut }: { lut: ArrayLike<number> }) {
   const onMove = (e: PointerEvent<SVGRectElement>) => {
     const rect = e.currentTarget.ownerSVGElement!.getBoundingClientRect()
     const scale = rect.width / SIZE
-    setActive(Math.max(0, Math.min(255, Math.round(((e.clientX - rect.left) / scale - M) / plot * 255))))
+    setActive(Math.max(0, Math.min(255, Math.round((((e.clientX - rect.left) / scale - M) / plot) * 255))))
   }
 
   return (
     <figure className="chart curve" dir="ltr">
       <figcaption className="chart-title">{t('explain.curve')}</figcaption>
       <div className="chart-plot">
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width="100%" style={{ maxWidth: 240 }} role="img" aria-label={t('explain.curve')}>
+        <svg
+          viewBox={`0 0 ${SIZE} ${SIZE}`}
+          width="100%"
+          style={{ maxWidth: 240 }}
+          role="img"
+          aria-label={t('explain.curve')}
+        >
           {[0, 128, 255].map((v) => (
             <g key={v}>
               <line className="grid" x1={sx(0)} x2={sx(255)} y1={sy(v)} y2={sy(v)} />
@@ -41,10 +47,25 @@ export function Curve({ lut }: { lut: ArrayLike<number> }) {
           {active !== null && (
             <>
               <line className="crosshair" x1={sx(active)} x2={sx(active)} y1={8} y2={8 + plot} />
-              <circle cx={sx(active)} cy={sy(lut[active])} r={4} fill="var(--series-1)" stroke="var(--chart-surface)" strokeWidth={2} />
+              <circle
+                cx={sx(active)}
+                cy={sy(lut[active])}
+                r={4}
+                fill="var(--series-1)"
+                stroke="var(--chart-surface)"
+                strokeWidth={2}
+              />
             </>
           )}
-          <rect x={M} y={8} width={plot} height={plot} fill="transparent" onPointerMove={onMove} onPointerLeave={() => setActive(null)} />
+          <rect
+            x={M}
+            y={8}
+            width={plot}
+            height={plot}
+            fill="transparent"
+            onPointerMove={onMove}
+            onPointerLeave={() => setActive(null)}
+          />
         </svg>
         <p className="curve-readout small" aria-live="polite">
           {active !== null ? (

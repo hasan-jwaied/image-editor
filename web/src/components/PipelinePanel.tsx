@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Processed } from '../hooks/useProcessor'
 import { useI18n } from '../i18n'
+import { downloadBlob } from '../lib/download'
 import { formatMs, opLabel } from '../lib/labels'
 import type { Action, PipelineState } from '../state/pipeline'
 import { cliCommand, toRecipe } from '../state/recipe'
@@ -15,12 +16,15 @@ interface Props {
 }
 
 export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExport }: Props) {
-  const { t, has, num } = useI18n()
+  const { t, num } = useI18n()
   const steps = pipeline.present
   const [copied, setCopied] = useState<'link' | 'cli' | null>(null)
   const recipe = toRecipe(steps)
   const command = cliCommand(recipe)
-  const total = steps.reduce((sum, _step, i) => sum + (processed.keys[i] === processed.currentKeys[i] ? (processed.ms[i] ?? 0) : 0), 0)
+  const total = steps.reduce(
+    (sum, _step, i) => sum + (processed.keys[i] === processed.currentKeys[i] ? (processed.ms[i] ?? 0) : 0),
+    0,
+  )
 
   const flash = (what: 'link' | 'cli') => {
     setCopied(what)
@@ -36,25 +40,43 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
     }
   }
 
-  const downloadRecipe = () => {
-    const blob = new Blob([JSON.stringify(recipe, null, 2) + '\n'], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'pixel-lab-recipe.json'
-    a.click()
-    URL.revokeObjectURL(a.href)
-  }
+  const downloadRecipe = () =>
+    downloadBlob(
+      new Blob([JSON.stringify(recipe, null, 2) + '\n'], { type: 'application/json' }),
+      'pixel-lab-recipe.json',
+    )
 
   return (
     <div className="pipeline">
       <div className="toolbar" role="toolbar" aria-label={t('pipeline.title')}>
-        <button type="button" className="icon-btn" onClick={() => dispatch({ type: 'undo' })} disabled={!pipeline.past.length} title={`${t('pipeline.undo')} (Ctrl+Z)`} aria-label={t('pipeline.undo')}>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => dispatch({ type: 'undo' })}
+          disabled={!pipeline.past.length}
+          title={`${t('pipeline.undo')} (Ctrl+Z)`}
+          aria-label={t('pipeline.undo')}
+        >
           <Undo />
         </button>
-        <button type="button" className="icon-btn" onClick={() => dispatch({ type: 'redo' })} disabled={!pipeline.future.length} title={`${t('pipeline.redo')} (Ctrl+Shift+Z)`} aria-label={t('pipeline.redo')}>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => dispatch({ type: 'redo' })}
+          disabled={!pipeline.future.length}
+          title={`${t('pipeline.redo')} (Ctrl+Shift+Z)`}
+          aria-label={t('pipeline.redo')}
+        >
           <Redo />
         </button>
-        <button type="button" className="icon-btn" onClick={() => dispatch({ type: 'clear' })} disabled={!steps.length} title={t('pipeline.clear')} aria-label={t('pipeline.clear')}>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => dispatch({ type: 'clear' })}
+          disabled={!steps.length}
+          title={t('pipeline.clear')}
+          aria-label={t('pipeline.clear')}
+        >
           <Trash />
         </button>
         <span className="toolbar-spacer" />
@@ -72,9 +94,10 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
         <ol className="steps" role="list">
           {steps.map((step, i) => {
             const selected = step.id === pipeline.selectedId
-            const label = opLabel(t, has, step.op)
+            const label = opLabel(t, step.op)
             const current = processed.keys[i] === processed.currentKeys[i]
-            const running = processed.runningIndex === i || (processed.busy && !current && processed.runningIndex === null)
+            const running =
+              processed.runningIndex === i || (processed.busy && !current && processed.runningIndex === null)
             return (
               <li key={step.id} className={`step${selected ? ' selected' : ''}${step.enabled ? '' : ' disabled'}`}>
                 <div className="step-head">
@@ -100,16 +123,43 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
                     </span>
                   </button>
                   <div className="step-actions">
-                    <button type="button" className="icon-btn sm" onClick={() => dispatch({ type: 'toggle', id: step.id })} aria-label={step.enabled ? t('step.disable') : t('step.enable')} title={step.enabled ? t('step.disable') : t('step.enable')} aria-pressed={!step.enabled}>
+                    <button
+                      type="button"
+                      className="icon-btn sm"
+                      onClick={() => dispatch({ type: 'toggle', id: step.id })}
+                      aria-label={step.enabled ? t('step.disable') : t('step.enable')}
+                      title={step.enabled ? t('step.disable') : t('step.enable')}
+                      aria-pressed={!step.enabled}
+                    >
                       {step.enabled ? <Eye /> : <EyeOff />}
                     </button>
-                    <button type="button" className="icon-btn sm step-move" onClick={() => dispatch({ type: 'move', id: step.id, delta: -1 })} disabled={i === 0} aria-label={t('step.up')} title={t('step.up')}>
+                    <button
+                      type="button"
+                      className="icon-btn sm step-move"
+                      onClick={() => dispatch({ type: 'move', id: step.id, delta: -1 })}
+                      disabled={i === 0}
+                      aria-label={t('step.up')}
+                      title={t('step.up')}
+                    >
                       <Up />
                     </button>
-                    <button type="button" className="icon-btn sm step-move" onClick={() => dispatch({ type: 'move', id: step.id, delta: 1 })} disabled={i === steps.length - 1} aria-label={t('step.down')} title={t('step.down')}>
+                    <button
+                      type="button"
+                      className="icon-btn sm step-move"
+                      onClick={() => dispatch({ type: 'move', id: step.id, delta: 1 })}
+                      disabled={i === steps.length - 1}
+                      aria-label={t('step.down')}
+                      title={t('step.down')}
+                    >
                       <Down />
                     </button>
-                    <button type="button" className="icon-btn sm danger" onClick={() => dispatch({ type: 'remove', id: step.id })} aria-label={t('step.remove')} title={t('step.remove')}>
+                    <button
+                      type="button"
+                      className="icon-btn sm danger"
+                      onClick={() => dispatch({ type: 'remove', id: step.id })}
+                      aria-label={t('step.remove')}
+                      title={t('step.remove')}
+                    >
                       <Trash />
                     </button>
                   </div>
@@ -124,7 +174,12 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
         <button type="button" className="btn primary" onClick={onExport} disabled={!canExport}>
           <Download /> {t('pipeline.export')}
         </button>
-        <button type="button" className="btn" onClick={() => copy(window.location.href, 'link')} disabled={!steps.length}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => copy(window.location.href, 'link')}
+          disabled={!steps.length}
+        >
           <Link /> {copied === 'link' ? t('pipeline.shared') : t('pipeline.share')}
         </button>
         <button type="button" className="btn" onClick={downloadRecipe} disabled={!steps.length}>

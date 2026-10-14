@@ -8,7 +8,7 @@ type Theme = 'light' | 'dark'
  * "class", default light, no system mode), so a theme chosen on the portfolio
  * carries over to the lab and back.
  */
-export const THEME_KEY = 'theme'
+const THEME_KEY = 'theme'
 
 function stored(): Theme {
   try {

@@ -20,7 +20,7 @@
 - **Measured, not claimed.** A naive 15×15 blur in pure Python took **22.4 s** on a 0.68-megapixel image. A summed-area table brings that to **0.29 s at any radius**, still in pure Python, and to **14 ms** in TypeScript. The lab lets you race the three algorithms in your own browser.
 - **Two engines, one answer.** Python generates 93 golden cases; the TypeScript suite must match every pixel exactly. Getting there meant reproducing Python's round-half-to-even rounding and adding floating-point numbers in the same order.
 - **One spec drives everything.** Operations are declared once in a Python registry and exported to [`spec/operations.json`](spec/operations.json). The CLI validates against it, the web app builds its controls from it, and a contract test fails if either engine falls out of sync. A pipeline built in the browser can be replayed by the CLI.
-- **Private and global.** Nothing is uploaded; there's no server, no analytics, no third-party request. Works offline, on phones, with keyboard only, and in English, Arabic and Hebrew (full right-to-left layout).
+- **Private and global.** Nothing is uploaded; there's no server, no analytics, no third-party request. Works offline, on phones, with keyboard only, and in English and Hebrew (full right-to-left layout).
 
 <table>
 <tr>

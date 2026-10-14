@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
+import { useFrameCanvas } from '../hooks/useFrameCanvas'
 import { useI18n } from '../i18n'
+import { WORKING_SIZES } from '../lib/config'
 import { SAMPLES, type Sample } from '../lib/samples'
 import { Close, Fit, Image as ImageIcon, Minus, Plus, Split } from './Icons'
 
@@ -33,22 +35,8 @@ interface Props {
   zoomRequest: { zoom: number; nonce: number } | null
 }
 
-const WORKING_SIZES = [1024, 1600, 2400, 4096]
 const MIN_ZOOM = 0.05
 const MAX_ZOOM = 16
-
-function useFrameCanvas(frame: Frame | null) {
-  const ref = useRef<HTMLCanvasElement>(null)
-  useLayoutEffect(() => {
-    const canvas = ref.current
-    if (!canvas || !frame) return
-    if (canvas.width !== frame.width) canvas.width = frame.width
-    if (canvas.height !== frame.height) canvas.height = frame.height
-    const ctx = canvas.getContext('2d')
-    ctx?.putImageData(new ImageData(frame.rgba, frame.width, frame.height), 0, 0)
-  }, [frame])
-  return ref
-}
 
 export function Viewer(props: Props) {
   const { t, num } = useI18n()
@@ -198,13 +186,24 @@ export function Viewer(props: Props) {
     if (pointers.current.size < 2) pinchRef.current = null
   }
 
-  const pixel = probe && shown ? Array.from(shown.rgba.subarray((probe.y * shown.width + probe.x) * 4, (probe.y * shown.width + probe.x) * 4 + 3)) : null
+  const pixel =
+    probe && shown
+      ? Array.from(
+          shown.rgba.subarray((probe.y * shown.width + probe.x) * 4, (probe.y * shown.width + probe.x) * 4 + 3),
+        )
+      : null
 
   return (
     <div className="viewer panel">
       <div className="viewer-bar">
         <div className="segmented sm" role="radiogroup" aria-label={t('viewer.result')}>
-          <button type="button" role="radio" aria-checked={mode === 'result'} className={mode === 'result' ? 'on' : ''} onClick={() => setMode('result')}>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={mode === 'result'}
+            className={mode === 'result' ? 'on' : ''}
+            onClick={() => setMode('result')}
+          >
             {t('viewer.result')}
           </button>
           <button
@@ -248,7 +247,12 @@ export function Viewer(props: Props) {
               <img src={s.thumb} alt="" width={36} height={28} />
             </button>
           ))}
-          <button type="button" className="btn sm" onClick={() => fileRef.current?.click()} aria-label={t('viewer.upload')}>
+          <button
+            type="button"
+            className="btn sm"
+            onClick={() => fileRef.current?.click()}
+            aria-label={t('viewer.upload')}
+          >
             <ImageIcon /> <span className="hide-sm">{t('viewer.upload')}</span>
           </button>
         </div>
@@ -350,11 +354,16 @@ export function Viewer(props: Props) {
           </div>
         )}
 
-        <div className="viewer-chips" dir={undefined}>
+        <div className="viewer-chips">
           {overlay && (
             <span className="chip">
               {t('viewer.viewing', { label: overlay.label })}
-              <button type="button" className="chip-close" onClick={props.onCloseOverlay} aria-label={t('viewer.close')}>
+              <button
+                type="button"
+                className="chip-close"
+                onClick={props.onCloseOverlay}
+                aria-label={t('viewer.close')}
+              >
                 <Close width={14} height={14} />
               </button>
             </span>
@@ -371,7 +380,9 @@ export function Viewer(props: Props) {
 
         {(props.busyLabel || props.error) && (
           <div className={`viewer-status${props.error ? ' error' : ''}`} role="status" aria-live="polite">
-            {props.error ? t('viewer.error', { msg: props.error }) : (
+            {props.error ? (
+              t('viewer.error', { msg: props.error })
+            ) : (
               <>
                 <span className="spinner" aria-hidden="true" /> {props.busyLabel}
               </>
@@ -382,16 +393,39 @@ export function Viewer(props: Props) {
 
       <div className="viewer-foot small">
         <div className="zoom-controls">
-          <button type="button" className="icon-btn sm" onClick={() => zoomAround(1 / 1.25)} disabled={!shown} aria-label={t('viewer.zoomOut')}>
+          <button
+            type="button"
+            className="icon-btn sm"
+            onClick={() => zoomAround(1 / 1.25)}
+            disabled={!shown}
+            aria-label={t('viewer.zoomOut')}
+          >
             <Minus />
           </button>
-          <span className="zoom-value" dir="ltr" title={t('viewer.zoomHint')} aria-label={t('viewer.zoom', { pct: `${Math.round(scale * 100)}%` })}>
+          <span
+            className="zoom-value"
+            dir="ltr"
+            title={t('viewer.zoomHint')}
+            aria-label={t('viewer.zoom', { pct: `${Math.round(scale * 100)}%` })}
+          >
             {Math.round(scale * 100)}%
           </span>
-          <button type="button" className="icon-btn sm" onClick={() => zoomAround(1.25)} disabled={!shown} aria-label={t('viewer.zoomIn')}>
+          <button
+            type="button"
+            className="icon-btn sm"
+            onClick={() => zoomAround(1.25)}
+            disabled={!shown}
+            aria-label={t('viewer.zoomIn')}
+          >
             <Plus />
           </button>
-          <button type="button" className="btn sm ghost" onClick={() => setZoom(null)} disabled={!shown} aria-pressed={zoom === null}>
+          <button
+            type="button"
+            className="btn sm ghost"
+            onClick={() => setZoom(null)}
+            disabled={!shown}
+            aria-pressed={zoom === null}
+          >
             <Fit /> {t('viewer.fit')}
           </button>
           <button

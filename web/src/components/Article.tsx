@@ -6,6 +6,7 @@ import { SPEC } from '../engine/spec'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n/en'
 import { PWA } from '../lib/config'
+import { blurSeries } from '../lib/blurSeries'
 import { formatMs, opLabel } from '../lib/labels'
 import { LineChart } from './charts/LineChart'
 import { REPO_URL } from './Header'
@@ -16,7 +17,17 @@ import { Github } from './Icons'
  * pages: highlight cards with real numbers, then sections with a short label
  * on the inline start and the content beside it.
  */
-function Section({ id, label, title, children }: { id: string; label: MessageKey; title: MessageKey; children: ReactNode }) {
+function Section({
+  id,
+  label,
+  title,
+  children,
+}: {
+  id: string
+  label: MessageKey
+  title: MessageKey
+  children: ReactNode
+}) {
   const { t } = useI18n()
   return (
     <section className="case-section" aria-labelledby={id}>
@@ -30,7 +41,7 @@ function Section({ id, label, title, children }: { id: string; label: MessageKey
 }
 
 export function Article() {
-  const { t, has, num } = useI18n()
+  const { t, num } = useI18n()
   const radii = pyBench.blur.radii
   const r7 = radii.indexOf(7)
   const [bw, bh] = pyBench.blur.image
@@ -39,20 +50,16 @@ export function Article() {
   const satPy = Math.round(pyBench.blur.ms.sat.reduce((a, b) => a + (b ?? 0), 0) / radii.length)
   const satTs = Math.round(tsBench.blur.ms.sat.reduce((a, b) => a + b, 0) / radii.length)
   const domain: [number, number] = [10, 100_000]
+  const pyOps = pyBench.ops.ms as Record<string, number>
+  const tsOps = tsBench.ops.ms as Record<string, number>
+  const speedups = SPEC.operations.map((op) => pyOps[op.id] / Math.max(tsOps[op.id], 0.1)).sort((a, b) => a - b)
+  const medianSpeedup = speedups[Math.floor(speedups.length / 2)]
 
   const highlights: { value: string; label: MessageKey }[] = [
     { value: `${num(v1Seconds, 1)} s → ${num(tsBench.blur.ms.sat[r7], 0)} ms`, label: 'how.hl.blur' },
     { value: num(golden.cases, 0), label: 'how.hl.golden' },
     { value: num(golden.operations, 0), label: 'how.hl.algos' },
-    { value: '3', label: 'how.hl.langs' },
-  ]
-
-  // Three series at most: with all lines on screen at once, a fourth colour
-  // can't stay distinguishable for colour-blind readers (validated palette).
-  const series = (bench: typeof pyBench.blur.ms | typeof tsBench.blur.ms) => [
-    { id: 'sat', label: t('explain.raceSat'), color: 'var(--series-1)', values: bench.sat },
-    { id: 'separable', label: t('explain.raceSeparable'), color: 'var(--series-2)', values: bench.separable },
-    { id: 'naive', label: t('explain.raceNaive'), color: 'var(--series-3)', values: bench.naive },
+    { value: `${num(medianSpeedup, 0)}×`, label: 'how.hl.speedup' },
   ]
 
   return (
@@ -83,7 +90,7 @@ export function Article() {
             yLabel={t('explain.time')}
             formatY={fmt}
             yDomain={domain}
-            series={series(pyBench.blur.ms)}
+            series={blurSeries(t, pyBench.blur.ms)}
           />
           <LineChart
             title={t('how.chartTs')}
@@ -92,7 +99,7 @@ export function Article() {
             yLabel={t('explain.time')}
             formatY={fmt}
             yDomain={domain}
-            series={series(tsBench.blur.ms)}
+            series={blurSeries(t, tsBench.blur.ms)}
           />
         </div>
         <p className="caption">{t('how.chartCaption', { w: bw, h: bh })}</p>
@@ -116,11 +123,11 @@ export function Article() {
               </thead>
               <tbody>
                 {SPEC.operations.map((op) => {
-                  const py = (pyBench.ops.ms as Record<string, number>)[op.id]
-                  const ts = (tsBench.ops.ms as Record<string, number>)[op.id]
+                  const py = pyOps[op.id]
+                  const ts = tsOps[op.id]
                   return (
                     <tr key={op.id}>
-                      <th scope="row">{opLabel(t, has, op.id)}</th>
+                      <th scope="row">{opLabel(t, op.id)}</th>
                       <td className="num" dir="ltr">
                         {fmt(py)}
                       </td>

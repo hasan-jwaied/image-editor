@@ -14,7 +14,9 @@ interface Encoded {
   planes: string[]
 }
 
-const golden = JSON.parse(readFileSync(process.env.GOLDEN ?? new URL('../../spec/golden/golden.json', import.meta.url), 'utf8')) as {
+const golden = JSON.parse(
+  readFileSync(process.env.GOLDEN ?? new URL('../../spec/golden/golden.json', import.meta.url), 'utf8'),
+) as {
   fixtures: Record<string, Encoded>
   cases: { name: string; fixture: string; steps: Step[]; expected: Encoded }[]
 }

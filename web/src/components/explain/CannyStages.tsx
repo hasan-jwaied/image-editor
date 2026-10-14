@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { Img } from '../../engine/image'
 import type { Params } from '../../engine/spec'
+import { useFrameCanvas } from '../../hooks/useFrameCanvas'
+import { useWorkerResult } from '../../hooks/useWorkerResult'
 import { useI18n } from '../../i18n'
 import type { MessageKey } from '../../i18n/en'
 import { frameOf } from '../../lib/frame'
@@ -8,18 +9,9 @@ import type { EngineClient } from '../../worker/client'
 import type { Frame, Overlay } from '../Viewer'
 
 const STAGES = ['smoothed', 'gradient', 'suppressed', 'edges'] as const
-type Stage = (typeof STAGES)[number]
 
-function Thumb({ frame, label }: { frame: Frame; label: string }) {
-  const ref = useRef<HTMLCanvasElement>(null)
-  useLayoutEffect(() => {
-    const c = ref.current
-    if (!c) return
-    c.width = frame.width
-    c.height = frame.height
-    c.getContext('2d')?.putImageData(new ImageData(frame.rgba, frame.width, frame.height), 0, 0)
-  }, [frame])
-  return <canvas ref={ref} className="thumb-canvas" aria-hidden="true" data-label={label} />
+function Thumb({ frame }: { frame: Frame }) {
+  return <canvas ref={useFrameCanvas(frame)} className="thumb-canvas" aria-hidden="true" />
 }
 
 export function CannyStages({
@@ -38,23 +30,11 @@ export function CannyStages({
   setOverlay: (o: Overlay | null) => void
 }) {
   const { t } = useI18n()
-  const [stages, setStages] = useState<Record<Stage, Img> | null>(null)
-  const key = JSON.stringify(params)
-
-  useEffect(() => {
-    let alive = true
-    const timer = window.setTimeout(() => {
-      client
-        .request({ type: 'cannyStages', stepIndex, params })
-        .then((s) => alive && setStages(s))
-        .catch(() => alive && setStages(null))
-    }, 120)
-    return () => {
-      alive = false
-      window.clearTimeout(timer)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, stepIndex, key, input])
+  const stages = useWorkerResult(
+    () => client.request({ type: 'cannyStages', stepIndex, params }),
+    JSON.stringify([stepIndex, params]),
+    input,
+  )
 
   return (
     <section>
@@ -69,8 +49,14 @@ export function CannyStages({
               const frame = frameOf(stages[s])
               const on = overlay?.label === label
               return (
-                <button key={s} type="button" className={`stage-btn${on ? ' on' : ''}`} aria-pressed={on} onClick={() => setOverlay(on ? null : { frame, label })}>
-                  <Thumb frame={frame} label={label} />
+                <button
+                  key={s}
+                  type="button"
+                  className={`stage-btn${on ? ' on' : ''}`}
+                  aria-pressed={on}
+                  onClick={() => setOverlay(on ? null : { frame, label })}
+                >
+                  <Thumb frame={frame} />
                   <span className="small">{label}</span>
                 </button>
               )

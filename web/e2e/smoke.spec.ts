@@ -40,25 +40,31 @@ test('recipes, undo and the share link round-trip', async ({ page, isMobile }) =
 
 test('explainers respond to the image', async ({ page, isMobile }) => {
   test.skip(isMobile, 'hover inspection is a pointer feature')
-  await page.goto('./#r=' + Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'))
+  await page.goto(
+    './#r=' +
+      Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'),
+  )
   await settled(page)
   // hover() scrolls the image into view and moves the pointer over its centre.
   await page.locator('.canvas-wrap').hover()
   await expect(page.locator('.kernel-inspector .sum').first()).toContainText('Σ')
 })
 
-test('switches to Arabic with a right-to-left layout', async ({ page }) => {
+test('switches to Hebrew with a right-to-left layout', async ({ page }) => {
   await page.goto('./')
-  await page.getByLabel('Language').selectOption('ar')
+  await page.getByLabel('Language').selectOption('he')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
-  await expect(page.locator('h1')).toContainText('من الصفر')
+  await expect(page.locator('h1')).toContainText('מאפס')
 })
 
 test.describe('touch', () => {
   test.skip(({ isMobile }) => !isMobile, 'touch gestures run on the mobile project')
 
   test('tapping the image inspects a pixel', async ({ page }) => {
-    await page.goto('./#r=' + Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'))
+    await page.goto(
+      './#r=' +
+        Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'),
+    )
     await settled(page)
     await page.getByRole('tab', { name: 'How it works' }).click()
     await expect(page.getByText('Tap the image to inspect a pixel.')).toBeVisible()
@@ -68,7 +74,10 @@ test.describe('touch', () => {
   })
 
   test('pinching zooms the image', async ({ page }) => {
-    await page.goto('./#r=' + Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'invert', params: {} }] })).toString('base64url'))
+    await page.goto(
+      './#r=' +
+        Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'invert', params: {} }] })).toString('base64url'),
+    )
     await settled(page)
     const before = await page.locator('.zoom-value').textContent()
     const box = (await page.locator('.canvas-wrap').boundingBox())!
@@ -78,7 +87,13 @@ test.describe('touch', () => {
     const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', d: number) =>
       cdp.send('Input.dispatchTouchEvent', {
         type,
-        touchPoints: type === 'touchEnd' ? [] : [{ x: cx - d, y: cy, id: 1 }, { x: cx + d, y: cy, id: 2 }],
+        touchPoints:
+          type === 'touchEnd'
+            ? []
+            : [
+                { x: cx - d, y: cy, id: 1 },
+                { x: cx + d, y: cy, id: 2 },
+              ],
       })
     await touch('touchStart', 20)
     for (const d of [40, 60, 80, 100]) await touch('touchMove', d)

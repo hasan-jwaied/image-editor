@@ -12,6 +12,7 @@ from __future__ import annotations
 import base64
 import json
 import sys
+from collections.abc import Iterator
 from itertools import chain
 from pathlib import Path
 from typing import Any
@@ -25,7 +26,7 @@ OUT = Path(__file__).resolve().parents[2] / "spec" / "golden" / "golden.json"
 # --- deterministic fixtures ---------------------------------------------------
 
 
-def _lcg(seed: int):  # type: ignore[no-untyped-def]
+def _lcg(seed: int) -> Iterator[int]:
     state = seed
     while True:
         state = (state * 1103515245 + 12345) % 2**31

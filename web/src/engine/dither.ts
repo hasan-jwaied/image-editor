@@ -2,7 +2,7 @@
 import { mapColor, type Img } from './image'
 import { roundHalfEven } from './math'
 
-export function ditherChannel(p: Uint8Array, w: number, h: number, levels: number): Uint8Array {
+function ditherChannel(p: Uint8Array, w: number, h: number, levels: number): Uint8Array {
   const steps = levels - 1
   const palette = Array.from({ length: levels }, (_, q) => roundHalfEven((q * 255) / steps))
   const buf = Float64Array.from(p)

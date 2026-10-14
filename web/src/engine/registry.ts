@@ -29,8 +29,7 @@ export const OPERATIONS: Record<string, OpFn> = {
   convolve: (img, p) => convolve(img, str(p.preset), p.weights as number[]),
   sobel: (img) => sobel(img),
   canny: (img, p) => canny(img, num(p.sigma), num(p.low), num(p.high)),
-  adaptive_threshold: (img, p) =>
-    adaptiveThreshold(img, num(p.blur_radius), num(p.block_radius), num(p.offset)),
+  adaptive_threshold: (img, p) => adaptiveThreshold(img, num(p.blur_radius), num(p.block_radius), num(p.offset)),
   posterize: (img, p) => posterize(img, num(p.levels)),
   dither: (img, p) => dither(img, num(p.levels)),
   seam_carve: (img, p) => seamCarve(img, num(p.width_percent), num(p.height_percent)),

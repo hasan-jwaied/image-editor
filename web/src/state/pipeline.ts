@@ -31,6 +31,8 @@ export type Action =
   | { type: 'redo' }
 
 const HISTORY_LIMIT = 100
+/** Longest pipeline; also enforced on shared links, so a crafted link can't tie up the tab. */
+export const MAX_STEPS = 32
 let counter = 0
 const newId = () => `s${Date.now().toString(36)}${(counter++).toString(36)}`
 
@@ -66,6 +68,7 @@ export function pipelineReducer(state: PipelineState, action: Action): PipelineS
   const steps = state.present
   switch (action.type) {
     case 'add': {
+      if (steps.length >= MAX_STEPS) return state
       const step = makeStep(action.op, action.params)
       return { ...commit(state, [...steps, step]), selectedId: step.id }
     }

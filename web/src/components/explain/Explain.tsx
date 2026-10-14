@@ -1,12 +1,14 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo } from 'react'
 import { gaussianKernel, kernelFor } from '../../engine/filters'
 import type { Img } from '../../engine/image'
+import { roundHalfEven } from '../../engine/math'
 import { SEPIA_MATRIX, brightnessLut, contrastLut, invertLut, luma, posterizeLut } from '../../engine/point'
-import { OP_SPECS, type ParamValue } from '../../engine/spec'
+import { opSpec, type ParamValue } from '../../engine/spec'
 import { equalizationLut, histogram } from '../../engine/tone'
 import { useI18n } from '../../i18n'
 import { opExplain, opLabel } from '../../lib/labels'
 import type { StepState } from '../../state/pipeline'
+import { StepParams } from '../StepParams'
 import type { EngineClient } from '../../worker/client'
 import { Curve } from '../charts/Curve'
 import { Histogram } from '../charts/Histogram'
@@ -28,9 +30,8 @@ interface Props {
   overlay: Overlay | null
   setOverlay: (o: Overlay | null) => void
   setParam: (name: string, value: ParamValue) => void
+  resetParams: () => void
   requestZoom: (zoom: number) => void
-  /** Parameter controls, shown between the heading and the explanation. */
-  controls?: ReactNode
 }
 
 const SOBEL_X = [
@@ -45,27 +46,38 @@ const SOBEL_Y = [
 ]
 
 export function Explain(props: Props) {
-  const { t, has } = useI18n()
+  const { t } = useI18n()
   const { step, input } = props
   if (!step) return <p className="empty-state">{t('explain.empty')}</p>
-  const spec = OP_SPECS[step.op]
+  const spec = opSpec(step.op)
 
   return (
     <article className="explain">
       <header className="explain-head">
-        <h3>{opLabel(t, has, step.op)}</h3>
+        <h3>{opLabel(t, step.op)}</h3>
         <span className="complexity big" dir="ltr" title={t('explain.complexityNote')}>
           {spec.complexity}
         </span>
       </header>
-      {props.controls}
-      <p className="explain-text">{opExplain(t, has, step.op)}</p>
+      <StepParams step={step} onChange={props.setParam} onReset={props.resetParams} />
+      <p className="explain-text">{opExplain(t, step.op)}</p>
       {input && <Detail {...props} input={input} step={step} />}
     </article>
   )
 }
 
-function Detail({ step, stepIndex, input, output, hover, client, overlay, setOverlay, setParam, requestZoom }: Props & { input: Img; step: StepState }) {
+function Detail({
+  step,
+  stepIndex,
+  input,
+  output,
+  hover,
+  client,
+  overlay,
+  setOverlay,
+  setParam,
+  requestZoom,
+}: Props & { input: Img; step: StepState }) {
   const { t } = useI18n()
   const p = step.params
   const num = (k: string) => p[k] as number
@@ -102,7 +114,15 @@ function Detail({ step, stepIndex, input, output, hover, client, overlay, setOve
     case 'sharpen':
       return <WeightsChart title={t('explain.gaussWeights')} weights={gaussianKernel(num('sigma'))} />
     case 'convolve':
-      return <ConvolveDetail input={input} hover={hover} preset={p.preset as string} weights={p.weights as number[]} setParam={setParam} />
+      return (
+        <ConvolveDetail
+          input={input}
+          hover={hover}
+          preset={p.preset as string}
+          weights={p.weights as number[]}
+          setParam={setParam}
+        />
+      )
     case 'sobel':
       return (
         <KernelInspector
@@ -112,21 +132,55 @@ function Detail({ step, stepIndex, input, output, hover, client, overlay, setOve
             { name: 'Gx', kernel: SOBEL_X },
             { name: 'Gy', kernel: SOBEL_Y },
           ]}
-          combine={([gx, gy]) => ({ label: '√(Gx² + Gy²)', value: Math.min(255, Math.round(Math.sqrt(gx * gx + gy * gy))) })}
+          combine={([gx, gy]) => ({
+            label: '√(Gx² + Gy²)',
+            value: Math.min(255, roundHalfEven(Math.sqrt(gx * gx + gy * gy))),
+          })}
         />
       )
     case 'canny':
-      return <CannyStages client={client} stepIndex={stepIndex} params={p} input={input} overlay={overlay} setOverlay={setOverlay} />
+      return (
+        <CannyStages
+          client={client}
+          stepIndex={stepIndex}
+          params={p}
+          input={input}
+          overlay={overlay}
+          setOverlay={setOverlay}
+        />
+      )
     case 'adaptive_threshold':
-      return <SatExplainer input={input} hover={hover} radius={num('block_radius')} mode="threshold" blurRadius={num('blur_radius')} offset={num('offset')} />
+      return (
+        <SatExplainer
+          input={input}
+          hover={hover}
+          radius={num('block_radius')}
+          mode="threshold"
+          blurRadius={num('blur_radius')}
+          offset={num('offset')}
+        />
+      )
     case 'dither':
       return <DitherDetail requestZoom={requestZoom} />
     case 'seam_carve':
-      return <SeamExplainer client={client} stepIndex={stepIndex} params={p} input={input} overlay={overlay} setOverlay={setOverlay} />
+      return (
+        <SeamExplainer
+          client={client}
+          stepIndex={stepIndex}
+          widthPercent={num('width_percent')}
+          input={input}
+          overlay={overlay}
+          setOverlay={setOverlay}
+        />
+      )
     case 'rotate':
       return (
         <pre className="formula" dir="ltr">
-          {p.direction === 'cw' ? 'out[x][h−1−y] = in[y][x]' : p.direction === 'ccw' ? 'out[w−1−x][y] = in[y][x]' : 'out[h−1−y][w−1−x] = in[y][x]'}
+          {p.direction === 'cw'
+            ? 'out[x][h−1−y] = in[y][x]'
+            : p.direction === 'ccw'
+              ? 'out[w−1−x][y] = in[y][x]'
+              : 'out[h−1−y][w−1−x] = in[y][x]'}
         </pre>
       )
     case 'resize':
@@ -198,30 +252,33 @@ function ConvolveDetail({
 }) {
   const { t } = useI18n()
   const kernel = kernelFor(preset, weights)
-  const editable = preset === 'custom' ? weights : kernel.flat()
+  const editable = kernel.flat()
   return (
     <>
       <KernelInspector input={input} hover={hover} kernels={[{ kernel }]} />
-      <details className="kernel-editor" open={preset === 'custom'}>
-        <summary>{t('explain.editKernel')}</summary>
-        <div className="matrix editable" dir="ltr" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-          {editable.slice(0, 9).map((v, i) => (
-            <input
-              key={i}
-              type="number"
-              step="0.5"
-              value={Number.isInteger(v) ? v : Number(v.toFixed(4))}
-              aria-label={`${t('explain.weight')} ${Math.floor(i / 3) + 1},${(i % 3) + 1}`}
-              onChange={(e) => {
-                const next = editable.slice(0, 9)
-                next[i] = Number(e.target.value) || 0
-                if (preset !== 'custom') setParam('preset', 'custom')
-                setParam('weights', next)
-              }}
-            />
-          ))}
-        </div>
-      </details>
+      {/* 3 × 3 only; larger custom kernels (from the CLI or a link) are shown, not edited. */}
+      {editable.length === 9 && (
+        <details className="kernel-editor" open={preset === 'custom'}>
+          <summary>{t('explain.editKernel')}</summary>
+          <div className="matrix editable" dir="ltr" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            {editable.map((v, i) => (
+              <input
+                key={i}
+                type="number"
+                step="0.5"
+                value={Number.isInteger(v) ? v : Number(v.toFixed(4))}
+                aria-label={`${t('explain.weight')} ${Math.floor(i / 3) + 1},${(i % 3) + 1}`}
+                onChange={(e) => {
+                  const next = [...editable]
+                  next[i] = Number(e.target.value) || 0
+                  if (preset !== 'custom') setParam('preset', 'custom')
+                  setParam('weights', next)
+                }}
+              />
+            ))}
+          </div>
+        </details>
+      )}
     </>
   )
 }
@@ -245,4 +302,3 @@ function DitherDetail({ requestZoom }: { requestZoom: (z: number) => void }) {
     </div>
   )
 }
-

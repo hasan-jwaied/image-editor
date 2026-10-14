@@ -113,11 +113,16 @@ function handle(id: number, req: Request): unknown {
       const input = inputOf(req.stepIndex)
       const s = cannyStages(input, req.params.sigma as number, req.params.low as number, req.params.high as number)
       const wrap = (p: Uint8Array) => makeImg(input.width, input.height, [p])
-      return { smoothed: wrap(s.smoothed), gradient: wrap(s.gradient), suppressed: wrap(s.suppressed), edges: wrap(s.edges) }
+      return {
+        smoothed: wrap(s.smoothed),
+        gradient: wrap(s.gradient),
+        suppressed: wrap(s.suppressed),
+        edges: wrap(s.edges),
+      }
     }
     case 'seamTrace': {
       const input = inputOf(req.stepIndex)
-      const { seams } = seamCarveTrace(input, req.params.width_percent as number, 0, true)
+      const { seams } = seamCarveTrace(input, req.widthPercent, 0, true)
       const energy = normalised(energyMap(luma(input), input.width, input.height))
       return { input, seams, energy }
     }

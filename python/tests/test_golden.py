@@ -6,33 +6,24 @@ that is not regenerated would also show up there.
 
 from __future__ import annotations
 
-import base64
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from pixel_lab import Image
 from pixel_lab.recipe import recipe_from_json, run
 
-GOLDEN = json.loads(
-    (Path(__file__).resolve().parents[2] / "spec" / "golden" / "golden.json").read_text("utf-8")
-)
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "python" / "scripts"))
+from generate_golden import decode  # noqa: E402  (the generator is the one source of the format)
 
-
-def _decode(data: dict[str, Any]) -> Image:
-    w, h = data["width"], data["height"]
-    planes = [
-        [list(raw[y * w : (y + 1) * w]) for y in range(h)]
-        for raw in (base64.b64decode(p) for p in data["planes"])
-    ]
-    n_color = 1 if data["mode"].startswith("L") else 3
-    return Image(planes[:n_color], planes[n_color] if data["mode"].endswith("A") else None)
+GOLDEN = json.loads((ROOT / "spec" / "golden" / "golden.json").read_text("utf-8"))
 
 
 @pytest.mark.parametrize("case", GOLDEN["cases"], ids=lambda c: c["name"])
 def test_golden_case(case: dict[str, Any]) -> None:
-    source = _decode(GOLDEN["fixtures"][case["fixture"]])
+    source = decode(GOLDEN["fixtures"][case["fixture"]])
     steps = recipe_from_json({"version": 1, "steps": case["steps"]})
-    assert run(source, steps) == _decode(case["expected"])
+    assert run(source, steps) == decode(case["expected"])

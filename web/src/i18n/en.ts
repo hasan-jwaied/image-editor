@@ -1,9 +1,10 @@
-/** English strings: the source of truth. Arabic and Hebrew must provide every key (enforced by the type). */
+/** English strings: the source of truth. Hebrew must provide every key (enforced by the type). */
 export const en = {
   'app.name': 'Pixel Lab',
   'app.tagline': 'Image processing from first principles',
   'hero.title': 'Every filter here is written from scratch — and explained.',
-  'hero.body': '19 image-processing algorithms, written twice (Python and TypeScript) and tested to produce identical pixels. Everything runs on your device.',
+  'hero.body':
+    '19 image-processing algorithms, written twice (Python and TypeScript) and tested to produce identical pixels. Everything runs on your device.',
   'hero.try': 'Try a recipe',
 
   'nav.back': 'Portfolio',
@@ -14,7 +15,7 @@ export const en = {
   'how.hl.blur': '15 × 15 blur: v1 script vs. now',
   'how.hl.golden': 'golden cases, zero differing pixels',
   'how.hl.algos': 'algorithms, each written twice',
-  'how.hl.langs': 'languages, right-to-left included',
+  'how.hl.speedup': 'median speed-up in the browser over the Python reference',
   'nav.lab': 'Lab',
   'nav.how': 'How it’s built',
   'nav.github': 'Source on GitHub',
@@ -124,9 +125,9 @@ export const en = {
   'explain.raceRun': 'Run the race',
   'explain.raceRunning': 'Racing…',
   'explain.raceNote': 'Measured in your browser on a {w} × {h} copy.',
-  'explain.raceNaive': '2-D convolution  O(N·k²)',
-  'explain.raceSeparable': 'Separable passes  O(N·k)',
-  'explain.raceSat': 'Summed-area table  O(N)',
+  'explain.raceNaive': '2-D convolution',
+  'explain.raceSeparable': 'Separable passes',
+  'explain.raceSat': 'Summed-area table',
   'explain.radius': 'Blur radius (px)',
   'explain.time': 'Time (ms, log scale)',
   'explain.showTable': 'Show as table',
@@ -179,21 +180,28 @@ export const en = {
   'op.invert.explain': 'v → 255 − v, read from a precomputed 256-entry table.',
   'op.brightness.explain': 'Adds a constant to every channel and clips to 0–255.',
   'op.contrast.explain': 'Scales each value’s distance from mid-gray (128), clipping at the ends.',
-  'op.equalize.explain': 'Remaps brightness through its cumulative histogram so every level gets used. Only brightness changes, so colors stay put.',
+  'op.equalize.explain':
+    'Remaps brightness through its cumulative histogram so every level gets used. Only brightness changes, so colors stay put.',
   'op.sepia.explain': 'Mixes R, G and B through a 3 × 3 color matrix.',
   'op.flip.explain': 'Reverses each row (horizontal) or the order of rows (vertical).',
   'op.rotate.explain': 'A transpose plus a reversal: lossless, no interpolation.',
   'op.resize.explain': 'Each output pixel blends its four nearest source pixels by distance (bilinear).',
-  'op.box_blur.explain': 'Averages a square window. A summed-area table needs four lookups per pixel at any radius, instead of (2r+1)².',
-  'op.gaussian_blur.explain': 'Weights neighbours by a bell curve, in two 1-D passes: 2k operations per pixel instead of k².',
+  'op.box_blur.explain':
+    'Averages a square window. A summed-area table needs four lookups per pixel at any radius, instead of (2r+1)².',
+  'op.gaussian_blur.explain':
+    'Weights neighbours by a bell curve, in two 1-D passes: 2k operations per pixel instead of k².',
   'op.sharpen.explain': 'Unsharp mask: subtract a blurred copy to isolate detail, then add it back amplified.',
   'op.convolve.explain': 'Replaces each pixel with a weighted sum of its neighbours. Pick a kernel or write your own.',
   'op.sobel.explain': 'Two 3 × 3 kernels measure horizontal and vertical change; edge strength is √(Gx² + Gy²).',
-  'op.canny.explain': 'Smooth, take gradients, thin edges to one pixel, then keep weak edges only if they touch strong ones.',
-  'op.adaptive_threshold.explain': 'Black where a pixel is darker than its neighbourhood average; the averages come from a summed-area table.',
+  'op.canny.explain':
+    'Smooth, take gradients, thin edges to one pixel, then keep weak edges only if they touch strong ones.',
+  'op.adaptive_threshold.explain':
+    'Black where a pixel is darker than its neighbourhood average; the averages come from a summed-area table.',
   'op.posterize.explain': 'Rounds each channel to a few evenly spaced levels.',
-  'op.dither.explain': 'Rounds each pixel to the nearest available level and spreads the error to its neighbours, so dot patterns recreate the tones.',
-  'op.seam_carve.explain': 'Removes the connected path with the least local contrast, again and again. Dynamic programming finds it in one pass.',
+  'op.dither.explain':
+    'Rounds each pixel to the nearest available level and spreads the error to its neighbours, so dot patterns recreate the tones.',
+  'op.seam_carve.explain':
+    'Removes the connected path with the least local contrast, again and again. Dynamic programming finds it in one pass.',
 
   'param.brightness.amount': 'Amount',
   'param.contrast.amount': 'Amount',
@@ -229,17 +237,21 @@ export const en = {
   'option.custom': 'Custom',
 
   'how.title': 'How it’s built',
-  'how.lead': 'It began as a slow, menu-driven university exercise in Python. Here is how it became fast, verified and explainable.',
+  'how.lead':
+    'It began as a slow, menu-driven university exercise in Python. Here is how it became fast, verified and explainable.',
   'how.s1.title': 'The blur that took 22 seconds',
-  'how.s1.p1': 'The first version blurred by brute force: a 15 × 15 blur took {v1} s. A summed-area table answers any window sum in four lookups, so the radius stops mattering: {sat} ms in pure Python, {satTs} ms in TypeScript.',
+  'how.s1.p1':
+    'The first version blurred by brute force: a 15 × 15 blur took {v1} s. A summed-area table answers any window sum in four lookups, so the radius stops mattering: {sat} ms in pure Python, {satTs} ms in TypeScript.',
   'how.chartPython': 'Python (CPython)',
   'how.chartTs': 'TypeScript (V8)',
   'how.chartCaption': 'Box blur of a {w} × {h} image. Log scale; lower is better.',
   'how.tableToggle': 'Compare all {n} operations',
   'how.s2.title': 'Two engines, one answer',
-  'how.s2.p1': 'Python generates {cases} reference outputs, and the TypeScript engine must match every pixel exactly. The catch was rounding: Python rounds 2.5 to 2, JavaScript to 3. Copying Python’s rule, and the order of floating-point sums, made the engines bit-identical.',
+  'how.s2.p1':
+    'Python generates {cases} reference outputs, and the TypeScript engine must match every pixel exactly. The catch was rounding: Python rounds 2.5 to 2, JavaScript to 3. Copying Python’s rule, and the order of floating-point sums, made the engines bit-identical.',
   'how.s3.title': 'One spec drives everything',
-  'how.s3.p1': 'Each operation is declared once, in Python. That spec builds the web controls, validates the command-line tool, and fails the tests if either engine drifts.',
+  'how.s3.p1':
+    'Each operation is declared once, in Python. That spec builds the web controls, validates the command-line tool, and fails the tests if either engine drifts.',
   'how.diagram.registry': 'Python registry',
   'how.diagram.spec': 'operations.json',
   'how.diagram.golden': 'golden.json',
@@ -255,7 +267,7 @@ export const en = {
   'how.s5.title': 'Built to be trusted',
   'how.s5.privacy': 'Private: images never leave your device.',
   'how.s5.offline': 'Works offline after the first visit.',
-  'how.s5.a11y': 'Accessible: keyboard-friendly, in English, Arabic and Hebrew.',
+  'how.s5.a11y': 'Accessible: keyboard-friendly, in English and Hebrew.',
   'how.s5.tests': 'Tested: property-based, golden and browser tests run on every change.',
   'how.ctaTitle': 'Want to see the code?',
   'how.ctaBody': 'Source, tests and benchmarks are on GitHub.',

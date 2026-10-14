@@ -55,7 +55,10 @@ export class EngineClient {
     }
   }
 
-  private send<R extends Request>(req: R, onProgress?: (i: number, f?: number) => void): { id: number; promise: Promise<ResponseFor<R>> } {
+  private send<R extends Request>(
+    req: R,
+    onProgress?: (i: number, f?: number) => void,
+  ): { id: number; promise: Promise<ResponseFor<R>> } {
     const id = this.nextId++
     const promise = new Promise<ResponseFor<R>>((resolve, reject) => {
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, onProgress })
@@ -69,7 +72,10 @@ export class EngineClient {
     return this.send({ type: 'setSource', image }).promise
   }
 
-  run(steps: Step[], onProgress?: (stepIndex: number, fraction?: number) => void): Promise<ResponseFor<{ type: 'run'; steps: Step[] }>> {
+  run(
+    steps: Step[],
+    onProgress?: (stepIndex: number, fraction?: number) => void,
+  ): Promise<ResponseFor<{ type: 'run'; steps: Step[] }>> {
     return new Promise((resolve, reject) => {
       const pending: Pending = { resolve: resolve as (v: unknown) => void, reject, onProgress }
       if (!this.running) {

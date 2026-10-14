@@ -3,7 +3,7 @@ import { blank, fromRGBA, imagesEqual, makeImg, toRGBA } from '../src/engine/ima
 import { roundHalfEven } from '../src/engine/math'
 import { OPERATIONS, applyStep } from '../src/engine/registry'
 import { findSeam, seamCarveTrace } from '../src/engine/seam'
-import { OP_SPECS, SPEC, defaultParams, resolveParams } from '../src/engine/spec'
+import { SPEC, defaultParams, opSpec, resolveParams } from '../src/engine/spec'
 import { rotate } from '../src/engine/geometry'
 
 describe('roundHalfEven matches Python round()', () => {
@@ -46,7 +46,8 @@ describe('spec contract', () => {
     expect(() => resolveParams('gaussian_blur', { sigma: 100 })).toThrow(/between/)
     expect(() => resolveParams('flip', { axis: 'diagonal' })).toThrow(/invalid/)
     expect(() => resolveParams('flip', { nope: 1 })).toThrow(/unknown parameter/)
-    expect(OP_SPECS.canny.params.map((p) => p.name)).toEqual(['sigma', 'low', 'high'])
+    expect(opSpec('canny').params.map((p) => p.name)).toEqual(['sigma', 'low', 'high'])
+    expect(() => opSpec('__proto__')).toThrow(/unknown operation/)
   })
 })
 

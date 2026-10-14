@@ -1,12 +1,16 @@
 import { useId, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { useI18n } from '../../i18n'
+import { Tooltip } from './Tooltip'
 import { useWidth } from './useWidth'
 
 export interface Series {
   id: string
   label: string
+  /** Shown after the label in the legend and table only (e.g. a complexity class). */
+  note?: string
   /** CSS color, normally a var(--series-n) token. */
   color: string
+  /** Missing points are null; values ≤ 0 can't sit on a log axis and are drawn at 0.1. */
   values: (number | null)[]
 }
 
@@ -25,14 +29,15 @@ interface Props {
 const M = { top: 10, right: 12, bottom: 34, left: 54 }
 
 /** Line chart with a log10 y-axis, crosshair tooltip, legend and table view. */
-export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 220, yDomain }: Props) {
+export function LineChart({ title, x, xLabel, yLabel, series: input, formatY, height = 220, yDomain }: Props) {
+  const series = input.map((s) => ({ ...s, values: s.values.map((v) => (v === null ? null : Math.max(v, 0.1))) }))
   const { t, num } = useI18n()
   const [wrapRef, width] = useWidth<HTMLDivElement>()
   const [active, setActive] = useState<number | null>(null)
   const [showTable, setShowTable] = useState(false)
   const titleId = useId()
 
-  const all = series.flatMap((s) => s.values.filter((v): v is number => v !== null && v > 0))
+  const all = series.flatMap((s) => s.values.filter((v): v is number => v !== null))
   const [lo, hi] = yDomain ?? [
     10 ** Math.floor(Math.log10(Math.min(...all))),
     10 ** Math.ceil(Math.log10(Math.max(...all))),
@@ -48,12 +53,13 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
   const xMin = x[0]
   const xMax = x[x.length - 1]
   const sx = (v: number) => M.left + ((v - xMin) / (xMax - xMin)) * plotW
-  const sy = (v: number) => M.top + plotH - ((Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * plotH
+  const sy = (v: number) =>
+    M.top + plotH - ((Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * plotH
 
   const paths = series.map((s) => {
     let d = ''
     s.values.forEach((v, i) => {
-      if (v === null || v <= 0) return
+      if (v === null) return
       d += `${d ? 'L' : 'M'}${sx(x[i]).toFixed(1)},${sy(v).toFixed(1)}`
     })
     return d
@@ -78,7 +84,8 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
     return best
   }
 
-  const onMove = (e: PointerEvent<SVGRectElement>) => setActive(nearest(e.clientX, e.currentTarget.ownerSVGElement!.getBoundingClientRect()))
+  const onMove = (e: PointerEvent<SVGRectElement>) =>
+    setActive(nearest(e.clientX, e.currentTarget.ownerSVGElement!.getBoundingClientRect()))
   const onKey = (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       e.preventDefault()
@@ -103,6 +110,7 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
             <li key={s.id}>
               <span className="line-key" style={{ background: s.color }} />
               {s.label}
+              {s.note && <span className="muted"> {s.note}</span>}
             </li>
           ))}
         </ul>
@@ -135,10 +143,19 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
           <text className="axis-label" x={M.left + plotW / 2} y={height - 2} textAnchor="middle">
             {xLabel}
           </text>
-          {active !== null && <line className="crosshair" x1={sx(x[active])} x2={sx(x[active])} y1={M.top} y2={M.top + plotH} />}
+          {active !== null && (
+            <line className="crosshair" x1={sx(x[active])} x2={sx(x[active])} y1={M.top} y2={M.top + plotH} />
+          )}
           {series.map((s, k) => (
             <g key={s.id}>
-              <path d={paths[k]} fill="none" stroke={s.color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+              <path
+                d={paths[k]}
+                fill="none"
+                stroke={s.color}
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
               {s.values.map((v, i) =>
                 v === null ? null : (
                   <circle
@@ -157,7 +174,7 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
           {endLabels &&
             labels.map(({ s, i, y }) => (
               <text key={s.id} className="end-label" x={sx(x[i]) + 10} y={y} dy="0.32em">
-                {s.label.split('  ')[0]}
+                {s.label}
               </text>
             ))}
           <rect
@@ -171,7 +188,7 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
           />
         </svg>
         {active !== null && (
-          <div className="tooltip" style={{ left: tipLeft, top: M.top, transform: flip ? 'translateX(calc(-100% - 12px))' : 'translateX(12px)' }} role="status">
+          <Tooltip x={tipLeft} top={M.top} flip={flip}>
             <div className="tooltip-head">
               {xLabel}: {num(x[active], 0)}
             </div>
@@ -179,14 +196,19 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
               <div key={s.id} className="tooltip-row">
                 <span className="line-key" style={{ background: s.color }} />
                 <strong>{s.values[active] === null ? '—' : formatY(s.values[active]!)}</strong>
-                <span className="muted">{s.label.split('  ')[0]}</span>
+                <span className="muted">{s.label}</span>
               </div>
             ))}
-          </div>
+          </Tooltip>
         )}
       </div>
       <span className="sr-only">{yLabel}</span>
-      <button type="button" className="text-btn small" onClick={() => setShowTable((v) => !v)} aria-expanded={showTable}>
+      <button
+        type="button"
+        className="text-btn small"
+        onClick={() => setShowTable((v) => !v)}
+        aria-expanded={showTable}
+      >
         {showTable ? t('explain.hideTable') : t('explain.showTable')}
       </button>
       {showTable && (
@@ -196,7 +218,7 @@ export function LineChart({ title, x, xLabel, yLabel, series, formatY, height = 
               <th scope="col">{xLabel}</th>
               {series.map((s) => (
                 <th key={s.id} scope="col">
-                  {s.label}
+                  {s.label} {s.note}
                 </th>
               ))}
             </tr>
