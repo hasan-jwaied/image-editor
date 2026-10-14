@@ -1,0 +1,411 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "adjust",
+      "label": "Adjust"
+    },
+    {
+      "id": "transform",
+      "label": "Transform"
+    },
+    {
+      "id": "filter",
+      "label": "Blur & sharpen"
+    },
+    {
+      "id": "edges",
+      "label": "Edges"
+    },
+    {
+      "id": "stylize",
+      "label": "Stylize"
+    },
+    {
+      "id": "content_aware",
+      "label": "Content-aware"
+    }
+  ],
+  "operations": [
+    {
+      "id": "grayscale",
+      "label": "Grayscale",
+      "category": "adjust",
+      "summary": "Weighted sum of R, G, B by perceived brightness (Rec. 601 luma).",
+      "complexity": "O(N)",
+      "params": []
+    },
+    {
+      "id": "invert",
+      "label": "Invert",
+      "category": "adjust",
+      "summary": "Photographic negative: every value v becomes 255 - v.",
+      "complexity": "O(N)",
+      "params": []
+    },
+    {
+      "id": "brightness",
+      "label": "Brightness",
+      "category": "adjust",
+      "summary": "Add a constant to every channel.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "amount",
+          "type": "int",
+          "label": "Amount",
+          "default": 30,
+          "min": -255,
+          "max": 255,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "contrast",
+      "label": "Contrast",
+      "category": "adjust",
+      "summary": "Stretch or squeeze values around mid-gray.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "amount",
+          "type": "int",
+          "label": "Amount",
+          "default": 30,
+          "min": -100,
+          "max": 100,
+          "step": 1,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "id": "equalize",
+      "label": "Equalize histogram",
+      "category": "adjust",
+      "summary": "Remap brightness through its cumulative histogram to use the full range.",
+      "complexity": "O(N)",
+      "params": []
+    },
+    {
+      "id": "sepia",
+      "label": "Sepia",
+      "category": "adjust",
+      "summary": "A vintage brown tone from a 3x3 color matrix.",
+      "complexity": "O(N)",
+      "params": []
+    },
+    {
+      "id": "flip",
+      "label": "Flip",
+      "category": "transform",
+      "summary": "Mirror the image.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "axis",
+          "type": "enum",
+          "label": "Axis",
+          "default": "horizontal",
+          "options": [
+            "horizontal",
+            "vertical"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rotate",
+      "label": "Rotate",
+      "category": "transform",
+      "summary": "Quarter or half turn via transposition.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "direction",
+          "type": "enum",
+          "label": "Direction",
+          "default": "cw",
+          "options": [
+            "cw",
+            "ccw",
+            "180"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "resize",
+      "label": "Resize",
+      "category": "transform",
+      "summary": "Bilinear interpolation between the four nearest source pixels.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "scale",
+          "type": "int",
+          "label": "Scale",
+          "default": 50,
+          "min": 1,
+          "max": 400,
+          "step": 1,
+          "unit": "%"
+        }
+      ]
+    },
+    {
+      "id": "box_blur",
+      "label": "Box blur",
+      "category": "filter",
+      "summary": "Window mean from a summed-area table: four lookups per pixel at any radius.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "radius",
+          "type": "int",
+          "label": "Radius",
+          "default": 4,
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "id": "gaussian_blur",
+      "label": "Gaussian blur",
+      "category": "filter",
+      "summary": "A 2-D Gaussian split into a horizontal and a vertical 1-D pass.",
+      "complexity": "O(N·σ)",
+      "params": [
+        {
+          "name": "sigma",
+          "type": "float",
+          "label": "Sigma",
+          "default": 2.0,
+          "min": 0.3,
+          "max": 25,
+          "step": 0.1,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "id": "sharpen",
+      "label": "Sharpen",
+      "category": "filter",
+      "summary": "Unsharp mask: add back the detail that a Gaussian blur removes.",
+      "complexity": "O(N·σ)",
+      "params": [
+        {
+          "name": "amount",
+          "type": "float",
+          "label": "Amount",
+          "default": 1.0,
+          "min": 0,
+          "max": 5,
+          "step": 0.1
+        },
+        {
+          "name": "sigma",
+          "type": "float",
+          "label": "Radius",
+          "default": 1.0,
+          "min": 0.3,
+          "max": 10,
+          "step": 0.1,
+          "unit": "px"
+        }
+      ]
+    },
+    {
+      "id": "convolve",
+      "label": "Convolution kernel",
+      "category": "filter",
+      "summary": "Slide a small weight matrix over the image and sum the products.",
+      "complexity": "O(N·k²)",
+      "params": [
+        {
+          "name": "preset",
+          "type": "enum",
+          "label": "Kernel",
+          "default": "emboss",
+          "options": [
+            "sharpen",
+            "emboss",
+            "outline",
+            "box",
+            "gaussian",
+            "custom"
+          ]
+        },
+        {
+          "name": "weights",
+          "type": "kernel",
+          "label": "Custom weights",
+          "default": [
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sobel",
+      "label": "Sobel gradient",
+      "category": "edges",
+      "summary": "Gradient magnitude from horizontal and vertical derivative kernels.",
+      "complexity": "O(N)",
+      "params": []
+    },
+    {
+      "id": "canny",
+      "label": "Canny edges",
+      "category": "edges",
+      "summary": "Smooth, take gradients, thin to one-pixel ridges, then link edges with hysteresis.",
+      "complexity": "O(N·σ)",
+      "params": [
+        {
+          "name": "sigma",
+          "type": "float",
+          "label": "Smoothing",
+          "default": 1.4,
+          "min": 0,
+          "max": 6,
+          "step": 0.1,
+          "unit": "px"
+        },
+        {
+          "name": "low",
+          "type": "float",
+          "label": "Low threshold",
+          "default": 40.0,
+          "min": 0,
+          "max": 1500,
+          "step": 1
+        },
+        {
+          "name": "high",
+          "type": "float",
+          "label": "High threshold",
+          "default": 100.0,
+          "min": 0,
+          "max": 1500,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "adaptive_threshold",
+      "label": "Ink sketch",
+      "category": "edges",
+      "summary": "Adaptive threshold: black where a pixel is darker than its local mean.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "blur_radius",
+          "type": "int",
+          "label": "Smoothing",
+          "default": 1,
+          "min": 0,
+          "max": 20,
+          "step": 1,
+          "unit": "px"
+        },
+        {
+          "name": "block_radius",
+          "type": "int",
+          "label": "Neighbourhood",
+          "default": 8,
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "unit": "px"
+        },
+        {
+          "name": "offset",
+          "type": "float",
+          "label": "Sensitivity",
+          "default": 10.0,
+          "min": -50,
+          "max": 50,
+          "step": 0.5
+        }
+      ]
+    },
+    {
+      "id": "posterize",
+      "label": "Posterize",
+      "category": "stylize",
+      "summary": "Quantize every channel to a few evenly spaced levels.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "levels",
+          "type": "int",
+          "label": "Levels",
+          "default": 4,
+          "min": 2,
+          "max": 64,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "dither",
+      "label": "Dither",
+      "category": "stylize",
+      "summary": "Floyd-Steinberg: quantize, then diffuse each pixel's error to its neighbours.",
+      "complexity": "O(N)",
+      "params": [
+        {
+          "name": "levels",
+          "type": "int",
+          "label": "Levels per channel",
+          "default": 2,
+          "min": 2,
+          "max": 16,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "seam_carve",
+      "label": "Seam carving",
+      "category": "content_aware",
+      "summary": "Shrink by repeatedly removing the lowest-energy path, found by dynamic programming.",
+      "complexity": "O(N·s)",
+      "params": [
+        {
+          "name": "width_percent",
+          "type": "int",
+          "label": "Narrower by",
+          "default": 25,
+          "min": 0,
+          "max": 60,
+          "step": 1,
+          "unit": "%"
+        },
+        {
+          "name": "height_percent",
+          "type": "int",
+          "label": "Shorter by",
+          "default": 0,
+          "min": 0,
+          "max": 60,
+          "step": 1,
+          "unit": "%"
+        }
+      ]
+    }
+  ]
+}
