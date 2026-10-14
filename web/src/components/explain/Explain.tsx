@@ -101,14 +101,14 @@ function Detail({
       return (
         <>
           <SatExplainer input={input} hover={hover} radius={num('radius')} mode="blur" />
-          <Race client={client} stepIndex={stepIndex} />
+          <Race client={client} stepIndex={stepIndex} input={input} />
         </>
       )
     case 'gaussian_blur':
       return (
         <>
           <WeightsChart title={t('explain.gaussWeights')} weights={gaussianKernel(num('sigma'))} />
-          <Race client={client} stepIndex={stepIndex} />
+          <Race client={client} stepIndex={stepIndex} input={input} />
         </>
       )
     case 'sharpen':

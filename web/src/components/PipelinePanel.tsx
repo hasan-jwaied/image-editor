@@ -4,8 +4,12 @@ import { useI18n } from '../i18n'
 import { downloadBlob } from '../lib/download'
 import { formatMs, opLabel } from '../lib/labels'
 import type { Action, PipelineState } from '../state/pipeline'
-import { cliCommand, toRecipe } from '../state/recipe'
+import { cliCommand, encodeRecipeHash, toRecipe, type Recipe } from '../state/recipe'
 import { Down, Download, Eye, EyeOff, FileCode, Link, Redo, Terminal, Trash, Undo, Up } from './Icons'
+
+/** This page's address with the pipeline in the hash; opening it applies the pipeline once. */
+const shareUrl = (recipe: Recipe) =>
+  `${window.location.origin}${window.location.pathname}${window.location.search}${encodeRecipeHash(recipe)}`
 
 interface Props {
   pipeline: PipelineState
@@ -174,12 +178,7 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
         <button type="button" className="btn primary" onClick={onExport} disabled={!canExport}>
           <Download /> {t('pipeline.export')}
         </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => copy(window.location.href, 'link')}
-          disabled={!steps.length}
-        >
+        <button type="button" className="btn" onClick={() => copy(shareUrl(recipe), 'link')} disabled={!steps.length}>
           <Link /> {copied === 'link' ? t('pipeline.shared') : t('pipeline.share')}
         </button>
         <button type="button" className="btn" onClick={downloadRecipe} disabled={!steps.length}>

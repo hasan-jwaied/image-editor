@@ -19,7 +19,7 @@ import { frameOf } from './lib/frame'
 import { opLabel } from './lib/labels'
 import { PRESETS, SAMPLES, type Sample } from './lib/samples'
 import { initialPipeline, makeStep, pipelineReducer } from './state/pipeline'
-import { decodeRecipeHash, encodeRecipeHash, toRecipe } from './state/recipe'
+import { decodeRecipeHash } from './state/recipe'
 import { EngineClient } from './worker/client'
 
 type Tab = 'add' | 'pipeline' | 'explain'
@@ -41,10 +41,15 @@ function storedSize(): number {
   }
 }
 
+/**
+ * The lab starts with an empty pipeline: nothing runs until the visitor picks
+ * an operation or a recipe. A shared link (#r=…) is the one exception; it is
+ * applied once and then removed from the address bar, so a reload starts clean.
+ */
 function initialSteps() {
-  const fromHash = decodeRecipeHash(window.location.hash)
-  if (fromHash) return fromHash.map((s) => makeStep(s.op, s.params, s.enabled))
-  return PRESETS[0].steps.map((s) => makeStep(s.op, s.params))
+  const shared = decodeRecipeHash(window.location.hash)
+  if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+  return shared ? shared.map((s) => makeStep(s.op, s.params, s.enabled)) : []
 }
 
 /** True only after `value` has been true for `delay` ms (avoids spinner flicker). */
@@ -119,13 +124,14 @@ export function App() {
   const viewIndex = selIndex >= 0 ? selIndex : steps.length - 1
   const selected = selIndex >= 0 ? steps[selIndex] : null
   const outputImg = viewIndex >= 0 ? (processed.images[viewIndex] ?? null) : source
-  const inputImg = viewIndex > 0 ? (processed.images[viewIndex - 1] ?? null) : source
-  const finalImg = steps.length ? (processed.images[steps.length - 1] ?? null) : source
+  // Without steps there is nothing to compare or export, so these stay empty.
+  const inputImg = viewIndex > 0 ? (processed.images[viewIndex - 1] ?? null) : viewIndex === 0 ? source : null
+  const finalImg = steps.length ? (processed.images[steps.length - 1] ?? null) : null
   const viewCurrent = viewIndex < 0 || processed.keys[viewIndex] === processed.currentKeys[viewIndex]
 
   const after = useMemo(() => (outputImg ? frameOf(outputImg) : source ? frameOf(source) : null), [outputImg, source])
   const before = useMemo(() => (inputImg ? frameOf(inputImg) : null), [inputImg])
-  const original = useMemo(() => (source ? frameOf(source) : null), [source])
+  const original = useMemo(() => (source && steps.length ? frameOf(source) : null), [source, steps.length])
 
   const showBusy = useDelayed(processed.busy || loading)
   const runningOp = processed.runningIndex !== null ? steps[processed.runningIndex]?.op : null
@@ -139,12 +145,6 @@ export function App() {
   // An overlay belongs to one step's state; drop it when that changes.
   const viewKey = processed.currentKeys[viewIndex]
   useEffect(() => setOverlay(null), [pipeline.selectedId, viewKey, source])
-
-  // Keep the pipeline in the URL so reloads and shared links restore it.
-  useEffect(() => {
-    const url = steps.length ? encodeRecipeHash(toRecipe(steps)) : window.location.pathname + window.location.search
-    window.history.replaceState(null, '', url)
-  }, [steps])
 
   const chooseWorkingSize = (size: number) => {
     setWorkingSize(size)

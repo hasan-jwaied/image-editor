@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { Img } from '../../engine/image'
 import { useI18n } from '../../i18n'
 import { blurSeries } from '../../lib/blurSeries'
 import { formatMs } from '../../lib/labels'
@@ -7,9 +8,11 @@ import type { RaceResult } from '../../worker/protocol'
 import { LineChart } from '../charts/LineChart'
 import { Play } from '../Icons'
 
-export function Race({ client, stepIndex }: { client: EngineClient; stepIndex: number }) {
+/** Times three blur algorithms on this step's input; a result is shown only for the image it measured. */
+export function Race({ client, stepIndex, input }: { client: EngineClient; stepIndex: number; input: Img }) {
   const { t, num } = useI18n()
-  const [result, setResult] = useState<RaceResult | null>(null)
+  const [measured, setMeasured] = useState<{ input: Img; result: RaceResult } | null>(null)
+  const result = measured?.input === input ? measured.result : null
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -17,7 +20,7 @@ export function Race({ client, stepIndex }: { client: EngineClient; stepIndex: n
     setRunning(true)
     setError(null)
     try {
-      setResult(await client.request({ type: 'race', stepIndex }))
+      setMeasured({ input, result: await client.request({ type: 'race', stepIndex }) })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
