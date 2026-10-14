@@ -1,0 +1,71 @@
+{
+  "engine": "typescript",
+  "runtime": "Node 20.20.0 (V8 11.3.244.8-node.33)",
+  "blur": {
+    "image": [
+      1000,
+      678
+    ],
+    "radii": [
+      1,
+      2,
+      4,
+      7,
+      12,
+      20
+    ],
+    "ms": {
+      "naive": [
+        40.8,
+        96.2,
+        288.8,
+        782.2,
+        2329.3,
+        6009.7
+      ],
+      "separable": [
+        25.9,
+        33,
+        51.5,
+        79.7,
+        126.5,
+        208.6
+      ],
+      "sat": [
+        17,
+        15.5,
+        14.2,
+        13.6,
+        15.6,
+        12.8
+      ]
+    }
+  },
+  "ops": {
+    "image": [
+      640,
+      434
+    ],
+    "ms": {
+      "grayscale": 4,
+      "invert": 2.7,
+      "brightness": 2.7,
+      "contrast": 3.3,
+      "equalize": 11.8,
+      "sepia": 14.1,
+      "flip": 4.1,
+      "rotate": 5,
+      "resize": 5.8,
+      "box_blur": 22.4,
+      "gaussian_blur": 87.7,
+      "sharpen": 58.2,
+      "convolve": 38.7,
+      "sobel": 14,
+      "canny": 48,
+      "adaptive_threshold": 16.2,
+      "posterize": 3,
+      "dither": 21.3,
+      "seam_carve": 387
+    }
+  }
+}

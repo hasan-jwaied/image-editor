@@ -171,4 +171,6 @@ if __name__ == "__main__":
     else:
         OUT.parent.mkdir(parents=True, exist_ok=True)
         OUT.write_text(text, encoding="utf-8")
+        summary = {"cases": len(json.loads(text)["cases"]), "operations": len(registry.OPERATIONS)}
+        (OUT.parent / "summary.json").write_text(json.dumps(summary) + "\n", encoding="utf-8")
         print(f"wrote {len(json.loads(text)['cases'])} cases to {OUT.relative_to(OUT.parents[2])}")
