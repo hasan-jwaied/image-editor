@@ -89,7 +89,9 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-`npm test` runs the engine tests (including the golden cross-check), `npm run e2e` runs the Playwright smoke tests, `npm run build` produces a static site in `web/dist` with relative asset paths, so it can be hosted under any sub-path (GitHub Pages, a personal site, an iframe).
+`npm test` runs the engine tests (including the golden cross-check), `npm run e2e` runs the Playwright smoke and accessibility tests, and `npm run build` produces the standalone static site in `web/dist` (relative asset paths, offline support), which is what GitHub Pages serves.
+
+`npm run build:site` produces the copy embedded in my portfolio at `/lab` (`web/dist-site`: absolute `/lab/` paths, no service worker, canonical and share URLs from `web/.env.site`). The portfolio's `npm run lab:sync` copies it into its `public/lab`. The design follows the portfolio's Apple-style system (same neutrals, accent, glass and navigation bar) and shares its `theme` setting, so light/dark carries over between the two.
 
 ### Python reference and CLI
 

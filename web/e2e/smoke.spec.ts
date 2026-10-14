@@ -11,7 +11,7 @@ test('loads the sample, runs the default pipeline and stays error-free', async (
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
-  await page.goto('/')
+  await page.goto('./')
   await settled(page)
   // The default recipe narrows the image by 30% with seam carving.
   await expect(page.locator('.probe')).toContainText('1,000 × 968', { timeout: 45_000 })
@@ -19,7 +19,7 @@ test('loads the sample, runs the default pipeline and stays error-free', async (
 })
 
 test('recipes, undo and the share link round-trip', async ({ page, isMobile }) => {
-  await page.goto('/')
+  await page.goto('./')
   await settled(page)
   await page.getByRole('button', { name: 'Newsprint' }).click()
   await settled(page)
@@ -39,15 +39,15 @@ test('recipes, undo and the share link round-trip', async ({ page, isMobile }) =
 
 test('explainers respond to the image', async ({ page, isMobile }) => {
   test.skip(isMobile, 'hover inspection is a pointer feature')
-  await page.goto('/#r=' + Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'))
+  await page.goto('./#r=' + Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'))
   await settled(page)
-  const box = (await page.locator('.canvas-wrap').boundingBox())!
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  // hover() scrolls the image into view and moves the pointer over its centre.
+  await page.locator('.canvas-wrap').hover()
   await expect(page.locator('.kernel-inspector .sum').first()).toContainText('Σ')
 })
 
 test('switches to Arabic with a right-to-left layout', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('./')
   await page.getByLabel('Language').selectOption('ar')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await expect(page.locator('h1')).toContainText('من الصفر')

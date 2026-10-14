@@ -42,6 +42,12 @@ export const Logo = (p: P) => (
   </svg>
 )
 
+/** Chevron pointing to the inline start; mirrored in right-to-left layouts by CSS (.flip-rtl). */
+export const Back = (p: P) => (
+  <Icon className="flip-rtl" {...p}>
+    <path d="m15 18-6-6 6-6" />
+  </Icon>
+)
 export const Undo = (p: P) => (
   <Icon {...p}>
     <path d="M9 14 4 9l5-5" />
