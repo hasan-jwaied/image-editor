@@ -138,7 +138,6 @@ export function App() {
   const viewCurrent = viewIndex < 0 || processed.keys[viewIndex] === processed.currentKeys[viewIndex]
 
   const after = useMemo(() => (outputImg ? frameOf(outputImg) : source ? frameOf(source) : null), [outputImg, source])
-  const before = useMemo(() => (inputImg ? frameOf(inputImg) : null), [inputImg])
   const original = useMemo(() => (source && steps.length ? frameOf(source) : null), [source, steps.length])
 
   const showBusy = useDelayed(processed.busy || loading)
@@ -285,7 +284,6 @@ export function App() {
           <div className="stage">
             <Viewer
               after={after}
-              before={before}
               original={original}
               overlay={overlay}
               onCloseOverlay={() => setOverlay(null)}

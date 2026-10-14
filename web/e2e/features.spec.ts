@@ -37,6 +37,28 @@ test('uploads never run anything, and a broken file gets a clear message', async
   await expect(page.locator('.viewer-status.error')).toHaveCount(0)
 })
 
+test('split view compares the original with the whole pipeline', async ({ page }) => {
+  const pixels = (canvas: string) =>
+    page.locator(canvas).evaluate((c: HTMLCanvasElement) => {
+      const { data } = c.getContext('2d')!.getImageData(0, 0, c.width, c.height)
+      return Array.from(data.filter((_, i) => i % 97 === 0)).join()
+    })
+  await page.getByRole('button', { name: 'Apply Invert', exact: true }).click()
+  await page.getByRole('button', { name: 'Add Sepia to the pipeline' }).click()
+  await settled(page)
+  const output = await pixels('.canvas-wrap canvas[role=img]')
+
+  await page.locator('.hold-btn').dispatchEvent('pointerdown')
+  const original = await pixels('.canvas-wrap canvas[role=img]')
+  await page.locator('.hold-btn').dispatchEvent('pointerup')
+  expect(original).not.toBe(output)
+
+  await page.getByRole('radio', { name: 'Split' }).click()
+  await expect(page.locator('.split-tag', { hasText: 'Original' })).toBeVisible()
+  expect(await pixels('.canvas-wrap canvas[aria-hidden=true]')).toBe(original)
+  expect(await pixels('.canvas-wrap canvas[role=img]')).toBe(output)
+})
+
 test('viewer controls, settings and shortcuts', async ({ page }) => {
   await page.getByRole('button', { name: 'Apply Invert', exact: true }).click()
   await settled(page)

@@ -18,7 +18,7 @@ export interface Overlay {
 
 interface Props {
   after: Frame | null
-  before: Frame | null
+  /** The decoded image before any step; the split's left side. */
   original: Frame | null
   overlay: Overlay | null
   onCloseOverlay: () => void
@@ -40,7 +40,7 @@ const MAX_ZOOM = 16
 
 export function Viewer(props: Props) {
   const { t, num } = useI18n()
-  const { after, before, original, overlay } = props
+  const { after, original, overlay } = props
   const containerRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [box, setBox] = useState({ w: 800, h: 600 })
@@ -57,11 +57,11 @@ export function Viewer(props: Props) {
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null)
 
   const shown: Frame | null = holding && original ? original : (overlay?.frame ?? after)
-  const splitAvailable = !!before && !!after && before.width === after.width && before.height === after.height
+  const splitAvailable = !!original && !!after && original.width === after.width && original.height === after.height
   const splitting = mode === 'split' && splitAvailable && !holding && !overlay
 
   const mainRef = useFrameCanvas(shown)
-  const beforeRef = useFrameCanvas(splitting ? before : null)
+  const originalRef = useFrameCanvas(splitting ? original : null)
 
   useLayoutEffect(() => {
     const el = containerRef.current
@@ -301,7 +301,7 @@ export function Viewer(props: Props) {
             className={`canvas-wrap${scale >= 2 ? ' pixelated' : ''}${props.busyLabel ? ' stale' : ''}`}
             style={{ left, top, width: dispW, height: dispH }}
           >
-            {splitting && <canvas ref={beforeRef} className="layer" aria-hidden="true" />}
+            {splitting && <canvas ref={originalRef} className="layer" aria-hidden="true" />}
             <canvas
               ref={mainRef}
               className="layer"
@@ -311,7 +311,7 @@ export function Viewer(props: Props) {
             />
             {splitting && (
               <>
-                <span className="split-tag start">{t('viewer.before')}</span>
+                <span className="split-tag start">{t('viewer.original')}</span>
                 <span className="split-tag end">{t('viewer.after')}</span>
                 <div
                   className="split-handle"
