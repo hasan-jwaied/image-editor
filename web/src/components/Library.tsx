@@ -45,49 +45,51 @@ export function Library({ active, onToggle, onAdd }: Props) {
         />
       </label>
       <p className="library-hint">{t('library.hint')}</p>
-      {groups.length === 0 && <p className="muted small pad">{t('library.empty', { q: query })}</p>}
-      {groups.map((g) => (
-        <section key={g.id} className="library-group" aria-labelledby={`cat-${g.id}`}>
-          <h3 id={`cat-${g.id}`}>{t(`category.${g.id}` as MessageKey)}</h3>
-          <ul role="list">
-            {g.ops.map((op) => {
-              const label = opLabel(t, op.id)
-              const on = active.has(op.id)
-              return (
-                <li key={op.id} className={`op-row${on ? ' on' : ''}`}>
-                  <button
-                    type="button"
-                    className="op-btn"
-                    onClick={() => onToggle(op.id)}
-                    aria-label={t(on ? 'library.remove' : 'library.apply', { name: label })}
-                    title={opExplain(t, op.id)}
-                  >
-                    <span className="op-name">{label}</span>
-                    <span className="complexity" dir="ltr">
-                      {op.complexity}
-                    </span>
-                  </button>
-                  {on ? (
-                    <span className="op-check" aria-hidden="true">
-                      <Check />
-                    </span>
-                  ) : (
+      <div className="library-list">
+        {groups.length === 0 && <p className="muted small pad">{t('library.empty', { q: query })}</p>}
+        {groups.map((g) => (
+          <section key={g.id} className="library-group" aria-labelledby={`cat-${g.id}`}>
+            <h3 id={`cat-${g.id}`}>{t(`category.${g.id}` as MessageKey)}</h3>
+            <ul role="list">
+              {g.ops.map((op) => {
+                const label = opLabel(t, op.id)
+                const on = active.has(op.id)
+                return (
+                  <li key={op.id} className={`op-row${on ? ' on' : ''}`}>
                     <button
                       type="button"
-                      className="icon-btn sm op-add"
-                      onClick={() => onAdd(op.id)}
-                      aria-label={t('library.add', { name: label })}
-                      title={t('library.add', { name: label })}
+                      className="op-btn"
+                      onClick={() => onToggle(op.id)}
+                      aria-label={t(on ? 'library.remove' : 'library.apply', { name: label })}
+                      title={opExplain(t, op.id)}
                     >
-                      <Plus />
+                      <span className="op-name">{label}</span>
+                      <span className="complexity" dir="ltr">
+                        {op.complexity}
+                      </span>
                     </button>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-      ))}
+                    {on ? (
+                      <span className="op-check" aria-hidden="true">
+                        <Check />
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        className="icon-btn sm op-add"
+                        onClick={() => onAdd(op.id)}
+                        aria-label={t('library.add', { name: label })}
+                        title={t('library.add', { name: label })}
+                      >
+                        <Plus />
+                      </button>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }

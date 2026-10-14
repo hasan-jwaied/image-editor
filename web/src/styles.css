@@ -785,10 +785,29 @@ option {
   .stage {
     height: auto;
   }
-  .library-panel,
-  .inspector {
+  .inspector,
+  .library-list {
     overflow-y: auto;
     scrollbar-width: thin;
+  }
+  /* Only the list scrolls, so nothing passes under the search field. */
+  .library-panel,
+  .library {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .library {
+    flex: 1;
+    padding-bottom: 0;
+  }
+  .library-list {
+    flex: 1;
+    min-height: 0;
+    margin: 0 -10px;
+    padding: 0 10px 14px;
+    -webkit-mask-image: linear-gradient(transparent, #000 20px);
+    mask-image: linear-gradient(transparent, #000 20px);
   }
 }
 
@@ -798,9 +817,6 @@ option {
 }
 
 .search {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -809,8 +825,6 @@ option {
   border-radius: 999px;
   background: var(--fill);
   color: var(--label-2);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
 }
 
 .search input {
@@ -858,7 +872,7 @@ option {
 }
 
 .library-hint {
-  padding: 8px 10px 0;
+  padding: 8px 10px 6px;
   font-size: 12px;
   color: var(--label-2);
 }

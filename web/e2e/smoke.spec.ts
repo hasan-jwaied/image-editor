@@ -142,7 +142,7 @@ test('panels hand the scroll on to the page', async ({ page, isMobile }) => {
   await page.evaluate(() =>
     window.scrollTo({ top: document.getElementById('lab')!.offsetTop - 48, behavior: 'instant' }),
   )
-  for (const panel of ['.library-panel', '.inspector']) {
+  for (const panel of ['.library-list', '.inspector']) {
     // Once the panel is at its end, the wheel must scroll the page.
     await page.locator(panel).evaluate((el) => (el.scrollTop = el.scrollHeight))
     const before = await page.evaluate(() => window.scrollY)
