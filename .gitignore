@@ -9,3 +9,6 @@ node_modules/
 dist/
 coverage/
 .DS_Store
+bench/*.bin
+web/test-results/
+web/playwright-report/

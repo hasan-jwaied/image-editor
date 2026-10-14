@@ -1,0 +1,11 @@
+{
+  "name": "Pixel Lab",
+  "short_name": "Pixel Lab",
+  "description": "Image processing from first principles, in your browser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f9f9f7",
+  "theme_color": "#256abf",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
