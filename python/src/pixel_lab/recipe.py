@@ -1,7 +1,7 @@
 """Recipes: an ordered list of operations, shared by the CLI and the web app.
 
-The JSON form is the same one the web app exports, so a pipeline built in the
-browser can be replayed by the Python reference implementation::
+The web app uses the same JSON in its share links, and the CLI replays it from a
+file (``pixel-lab run --recipe``) or saves it from ``pixel-lab edit``::
 
     {"version": 1, "steps": [{"op": "gaussian_blur", "params": {"sigma": 2}}]}
 """

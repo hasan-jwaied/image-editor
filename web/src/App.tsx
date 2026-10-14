@@ -186,11 +186,15 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // Clicking an operation shows it on its own (its effect stays readable);
-  // "+" stacks it. Re-applying the op that is already alone keeps its settings.
-  const applyOp = (op: string) => {
-    if (steps.length === 1 && steps[0].op === op) dispatch({ type: 'select', id: steps[0].id })
-    else dispatch({ type: 'replace', steps: [{ op }] })
+  // Clicking an operation shows it on its own, so its effect stays readable;
+  // clicking it again removes it. "+" stacks an operation that isn't applied yet.
+  const toggleOp = (op: string) => {
+    const applied = steps.find((s) => s.op === op)
+    if (applied) {
+      dispatch({ type: 'remove', id: applied.id })
+      return
+    }
+    dispatch({ type: 'replace', steps: [{ op }] })
     if (!wide) setTab('explain')
   }
   const addOp = (op: string) => dispatch({ type: 'add', op })
@@ -274,7 +278,7 @@ export function App() {
               <h2 id="library-title" className="panel-title">
                 {t('library.title')}
               </h2>
-              <Library active={activeOps} onApply={applyOp} onAdd={addOp} />
+              <Library active={activeOps} onToggle={toggleOp} onAdd={addOp} />
             </aside>
           )}
 
@@ -345,7 +349,7 @@ export function App() {
                   aria-labelledby={`tab-${activeTab}`}
                   className="tabpanel"
                 >
-                  {activeTab === 'add' && <Library active={activeOps} onApply={applyOp} onAdd={addOp} />}
+                  {activeTab === 'add' && <Library active={activeOps} onToggle={toggleOp} onAdd={addOp} />}
                   {activeTab === 'pipeline' && pipelinePanel}
                   {activeTab === 'explain' && explainPanel}
                 </div>

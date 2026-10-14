@@ -76,12 +76,6 @@ export const Download = (p: P) => (
     <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
   </Icon>
 )
-export const FileCode = (p: P) => (
-  <Icon {...p}>
-    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-    <path d="M14 3v5h5M10 13l-2 2 2 2M14 13l2 2-2 2" />
-  </Icon>
-)
 export const Up = (p: P) => (
   <Icon {...p}>
     <path d="m6 15 6-6 6 6" />
@@ -107,6 +101,11 @@ export const EyeOff = (p: P) => (
   <Icon {...p}>
     <path d="M3 3l18 18M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.1M6.6 6.6A17.4 17.4 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6" />
     <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+  </Icon>
+)
+export const Check = (p: P) => (
+  <Icon {...p}>
+    <path d="m5 12.5 4.5 4.5L19 7.5" />
   </Icon>
 )
 export const Plus = (p: P) => (

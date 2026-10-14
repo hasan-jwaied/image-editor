@@ -1,18 +1,8 @@
-import { expect, test, type Page } from '@playwright/test'
-
-/** Wait until every step has a timing (no step is still running) and no status is shown. */
-async function settled(page: Page) {
-  await expect(page.locator('.canvas-wrap canvas').first()).toBeVisible()
-  await expect(page.locator('.step-meta', { hasText: '…' })).toHaveCount(0, { timeout: 45_000 })
-  await expect(page.locator('.viewer-status')).toHaveCount(0, { timeout: 45_000 })
-}
+import { expect, test } from '@playwright/test'
+import { settled, showPipeline } from './helpers'
 
 /** Phones start at a 1024px working size, laptops at 1600px (the 1428 × 968 sample fits as is). */
 const sampleSize = (isMobile: boolean) => (isMobile ? '1,024 × 694' : '1,428 × 968')
-
-async function showPipeline(page: Page, isMobile: boolean) {
-  if (isMobile) await page.getByRole('tab', { name: 'Pipeline' }).click()
-}
 
 test('nothing runs until the visitor chooses an operation', async ({ page, isMobile }) => {
   const errors: string[] = []
@@ -70,7 +60,7 @@ test('recipes, undo, and a shared link that applies once', async ({ page, contex
   await expect(shared.locator('.steps > li')).toHaveCount(0)
 })
 
-test('clicking an operation applies it alone; + stacks it', async ({ page, isMobile }) => {
+test('operations toggle: click applies alone or removes, + stacks once', async ({ page, isMobile }) => {
   const library = async () => {
     if (isMobile) await page.getByRole('tab', { name: 'Add' }).click()
   }
@@ -78,47 +68,50 @@ test('clicking an operation applies it alone; + stacks it', async ({ page, isMob
     await showPipeline(page, isMobile)
     return page.locator('.steps .step-name').allTextContents()
   }
+  const click = async (name: string) => {
+    await library()
+    await page.getByRole('button', { name, exact: true }).click()
+    await settled(page)
+  }
   await page.goto('./')
   await settled(page)
 
-  await library()
-  await page.getByRole('button', { name: 'Apply Grayscale' }).click()
-  await settled(page)
+  await click('Apply Grayscale')
   expect(await stepNames()).toEqual(['Grayscale'])
 
-  // A second click on another operation replaces it, so each result stays readable.
-  await library()
-  await page.getByRole('button', { name: 'Apply Invert' }).click()
-  await settled(page)
+  // Another operation replaces it, so each result stays readable on its own.
+  await click('Apply Invert')
   expect(await stepNames()).toEqual(['Invert'])
 
-  // "+" stacks on top of what is there.
-  await library()
-  await page.getByRole('button', { name: 'Add Sepia to the pipeline' }).click()
-  await settled(page)
+  // "+" stacks an operation that isn't applied yet; applied ones show a check, not "+".
+  await click('Add Sepia to the pipeline')
   expect(await stepNames()).toEqual(['Invert', 'Sepia'])
   await library()
-  await expect(page.getByRole('button', { name: 'Invert, in the pipeline' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Apply Grayscale' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Add Invert to the pipeline' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Add Grayscale to the pipeline' })).toBeVisible()
 
-  // Applying replaces the stack; undo brings it back.
-  await page.getByRole('button', { name: 'Apply Brightness' }).click()
-  await settled(page)
+  // Clicking an applied operation removes just that one.
+  await click('Remove Invert')
+  expect(await stepNames()).toEqual(['Sepia'])
+  await click('Remove Sepia')
+  expect(await stepNames()).toEqual([])
+  await expect(page.getByRole('button', { name: 'Download PNG' })).toBeDisabled()
+
+  // Applying replaces a stack; undo brings it back.
+  await click('Apply Invert')
+  await click('Add Sepia to the pipeline')
+  await click('Apply Brightness')
   expect(await stepNames()).toEqual(['Brightness'])
   await page.keyboard.press('Control+z')
   expect(await stepNames()).toEqual(['Invert', 'Sepia'])
-  await page.keyboard.press('Control+Shift+z')
+})
 
-  // Re-applying the operation that is already alone keeps its settings.
-  if (isMobile) await page.getByRole('tab', { name: 'How it works' }).click()
-  const slider = page.getByRole('slider', { name: 'Amount' })
-  await slider.focus()
-  await page.keyboard.press('ArrowRight')
-  await expect(slider).toHaveValue('31')
-  await library()
-  await page.getByRole('button', { name: 'Brightness, in the pipeline' }).click()
-  if (isMobile) await page.getByRole('tab', { name: 'How it works' }).click()
-  await expect(page.getByRole('slider', { name: 'Amount' })).toHaveValue('31')
+test('a shared link never yields duplicate operations', async ({ page, isMobile }) => {
+  const link = { version: 1, steps: [{ op: 'invert' }, { op: 'grayscale' }, { op: 'invert' }, { op: 'grayscale' }] }
+  await page.goto('./#r=' + Buffer.from(JSON.stringify(link)).toString('base64url'))
+  await settled(page)
+  await showPipeline(page, isMobile)
+  expect(await page.locator('.steps .step-name').allTextContents()).toEqual(['Invert', 'Grayscale'])
 })
 
 test('a section link such as #how lands on that section, below the nav bar', async ({ page }) => {

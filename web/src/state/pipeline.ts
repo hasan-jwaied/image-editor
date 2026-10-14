@@ -43,13 +43,16 @@ export const makeStep = (op: string, params?: Params, enabled = true): StepState
   enabled,
 })
 
-export const initialPipeline = (steps: StepState[] = []): PipelineState => ({
-  past: [],
-  present: steps,
-  future: [],
-  selectedId: steps[steps.length - 1]?.id ?? null,
-  lastEditKey: null,
-})
+/**
+ * A pipeline holds each operation at most once: repeating one adds nothing a
+ * parameter can't do, and keeps every step's effect distinguishable.
+ */
+const uniqueOps = (steps: StepState[]) => steps.filter((s, i) => steps.findIndex((t) => t.op === s.op) === i)
+
+export function initialPipeline(steps: StepState[] = []): PipelineState {
+  const present = uniqueOps(steps)
+  return { past: [], present, future: [], selectedId: present[present.length - 1]?.id ?? null, lastEditKey: null }
+}
 
 function commit(state: PipelineState, present: StepState[], editKey: string | null = null): PipelineState {
   if (editKey !== null && editKey === state.lastEditKey) {
@@ -68,7 +71,7 @@ export function pipelineReducer(state: PipelineState, action: Action): PipelineS
   const steps = state.present
   switch (action.type) {
     case 'add': {
-      if (steps.length >= MAX_STEPS) return state
+      if (steps.length >= MAX_STEPS || steps.some((s) => s.op === action.op)) return state
       const step = makeStep(action.op, action.params)
       return { ...commit(state, [...steps, step]), selectedId: step.id }
     }
@@ -106,7 +109,7 @@ export function pipelineReducer(state: PipelineState, action: Action): PipelineS
     case 'select':
       return { ...state, selectedId: action.id, lastEditKey: null }
     case 'replace': {
-      const next = action.steps.map((s) => makeStep(s.op, s.params, s.enabled ?? true))
+      const next = uniqueOps(action.steps.map((s) => makeStep(s.op, s.params, s.enabled ?? true)))
       return { ...commit(state, next), selectedId: next[next.length - 1]?.id ?? null }
     }
     case 'clear':
