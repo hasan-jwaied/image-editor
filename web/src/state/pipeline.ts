@@ -45,7 +45,7 @@ export const initialPipeline = (steps: StepState[] = []): PipelineState => ({
   past: [],
   present: steps,
   future: [],
-  selectedId: steps.at(-1)?.id ?? null,
+  selectedId: steps[steps.length - 1]?.id ?? null,
   lastEditKey: null,
 })
 
@@ -104,7 +104,7 @@ export function pipelineReducer(state: PipelineState, action: Action): PipelineS
       return { ...state, selectedId: action.id, lastEditKey: null }
     case 'replace': {
       const next = action.steps.map((s) => makeStep(s.op, s.params, s.enabled ?? true))
-      return { ...commit(state, next), selectedId: next.at(-1)?.id ?? null }
+      return { ...commit(state, next), selectedId: next[next.length - 1]?.id ?? null }
     }
     case 'clear':
       return steps.length ? { ...commit(state, []), selectedId: null } : state
@@ -136,5 +136,5 @@ export function pipelineReducer(state: PipelineState, action: Action): PipelineS
 }
 
 function keepSelection(id: string | null, steps: StepState[]) {
-  return steps.some((s) => s.id === id) ? id : (steps.at(-1)?.id ?? null)
+  return steps.some((s) => s.id === id) ? id : (steps[steps.length - 1]?.id ?? null)
 }

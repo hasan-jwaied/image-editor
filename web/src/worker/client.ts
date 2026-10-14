@@ -7,6 +7,8 @@
  * terminated and restarted rather than making the user wait.
  */
 import type { Img } from '../engine/image'
+// `?worker` lets Vite build a classic worker in production (Safari 14 has no module workers).
+import EngineWorker from './engine.worker.ts?worker'
 import type { Step } from '../engine/registry'
 import type { Request, ResponseFor, WorkerMessage } from './protocol'
 
@@ -38,7 +40,7 @@ export class EngineClient {
   }
 
   private spawn() {
-    this.worker = new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' })
+    this.worker = new EngineWorker()
     this.worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       const msg = event.data
       const p = this.pending.get(msg.id)

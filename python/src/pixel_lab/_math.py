@@ -10,16 +10,6 @@ from __future__ import annotations
 from .image import Channel
 
 
-def clamp_byte(value: int) -> int:
-    return 0 if value < 0 else 255 if value > 255 else value
-
-
-def to_byte(value: float) -> int:
-    """Round half-to-even, then clamp into 0..255."""
-    v = round(value)
-    return 0 if v < 0 else 255 if v > 255 else v
-
-
 def pad_edge(channel: Channel, pad: int) -> Channel:
     """Pad a plane by repeating its border pixels (clamp-to-edge).
 

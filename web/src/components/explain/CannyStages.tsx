@@ -10,7 +10,7 @@ import type { Frame, Overlay } from '../Viewer'
 const STAGES = ['smoothed', 'gradient', 'suppressed', 'edges'] as const
 type Stage = (typeof STAGES)[number]
 
-export function Thumb({ frame, label }: { frame: Frame; label: string }) {
+function Thumb({ frame, label }: { frame: Frame; label: string }) {
   const ref = useRef<HTMLCanvasElement>(null)
   useLayoutEffect(() => {
     const c = ref.current

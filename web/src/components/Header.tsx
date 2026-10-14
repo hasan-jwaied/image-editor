@@ -19,7 +19,7 @@ export function Header({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onTo
       <div className="glass-nav">
         <nav className="nav-inner" aria-label="Primary">
           {HOME_URL && (
-            <a className="nav-back" href={HOME_URL}>
+            <a className="nav-back" href={HOME_URL} aria-label={t('nav.back')}>
               <Back />
               <span>{t('nav.back')}</span>
             </a>

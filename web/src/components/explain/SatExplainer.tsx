@@ -3,6 +3,7 @@ import type { Img } from '../../engine/image'
 import { integralImage, roundHalfEven } from '../../engine/math'
 import { boxBlurChannel } from '../../engine/filters'
 import { luma } from '../../engine/point'
+import { usePointerHint } from '../../hooks/usePointerHint'
 import { useI18n } from '../../i18n'
 
 /**
@@ -25,6 +26,7 @@ export function SatExplainer({
   offset?: number
 }) {
   const { t, num } = useI18n()
+  const hint = usePointerHint()
   const { width: w, height: h } = input
   const plane = useMemo(() => {
     const g = luma(input)
@@ -117,7 +119,7 @@ export function SatExplainer({
           </div>
         </dl>
       ) : (
-        <p className="small muted">{t('explain.hover')}</p>
+        <p className="small muted">{t(hint)}</p>
       )}
     </div>
   )

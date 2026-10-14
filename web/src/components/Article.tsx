@@ -58,7 +58,6 @@ export function Article() {
   return (
     <article id="how" className="article" aria-labelledby="how-title">
       <header className="article-head">
-        <p className="eyebrow">{t('app.name')}</p>
         <h2 id="how-title">{t('how.title')}</h2>
         <p className="lead">{t('how.lead')}</p>
       </header>
@@ -75,8 +74,7 @@ export function Article() {
       </ul>
 
       <Section id="s1" label="how.s1.label" title="how.s1.title">
-        <p>{t('how.s1.p1', { mp: num((bw * bh) / 1e6, 2), v1: num(v1Seconds, 1) })}</p>
-        <p>{t('how.s1.p2', { sat: num(satPy, 0), satTs: num(satTs, 0) })}</p>
+        <p>{t('how.s1.p1', { v1: num(v1Seconds, 1), sat: num(satPy, 0), satTs: num(satTs, 0) })}</p>
         <div className="small-multiples glass">
           <LineChart
             title={t('how.chartPython')}
@@ -97,20 +95,52 @@ export function Article() {
             series={series(tsBench.blur.ms)}
           />
         </div>
-        <p className="caption">
-          {t('how.chartCaption', { w: bw, h: bh })} {t('how.chartNoteV1', { v1: num(v1Seconds, 1) })}
-        </p>
+        <p className="caption">{t('how.chartCaption', { w: bw, h: bh })}</p>
+        <details className="disclosure">
+          <summary>{t('how.tableToggle', { n: SPEC.operations.length })}</summary>
+          <div className="table-wrap glass">
+            <table className="data-table bench-table">
+              <thead>
+                <tr>
+                  <th scope="col">{t('how.table.op')}</th>
+                  <th scope="col" className="num">
+                    {t('how.table.python')}
+                  </th>
+                  <th scope="col" className="num">
+                    {t('how.table.ts')}
+                  </th>
+                  <th scope="col" className="num">
+                    {t('how.table.speedup')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {SPEC.operations.map((op) => {
+                  const py = (pyBench.ops.ms as Record<string, number>)[op.id]
+                  const ts = (tsBench.ops.ms as Record<string, number>)[op.id]
+                  return (
+                    <tr key={op.id}>
+                      <th scope="row">{opLabel(t, has, op.id)}</th>
+                      <td className="num" dir="ltr">
+                        {fmt(py)}
+                      </td>
+                      <td className="num" dir="ltr">
+                        {fmt(ts)}
+                      </td>
+                      <td className="num" dir="ltr">
+                        {num(py / Math.max(ts, 0.1), 0)}×
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </Section>
 
       <Section id="s2" label="how.s2.label" title="how.s2.title">
         <p>{t('how.s2.p1', { cases: golden.cases })}</p>
-        <p>{t('how.s2.p2')}</p>
-        <pre className="code-block" dir="ltr" tabIndex={0}>
-          <code>{`function roundHalfEven(x: number): number {
-  const r = Math.round(x) // rounds halves toward +Infinity
-  return r - x === 0.5 && r % 2 !== 0 ? r - 1 : r
-}`}</code>
-        </pre>
       </Section>
 
       <Section id="s3" label="how.s3.label" title="how.s3.title">
@@ -132,69 +162,16 @@ export function Article() {
             <span className="flow-arrow back" aria-hidden="true" />
             <span className="flow-node">{t('how.diagram.tsEngine')}</span>
           </div>
-          <figcaption className="caption">{t('how.diagram.caption')}</figcaption>
         </figure>
       </Section>
 
-      <Section id="s4" label="how.s4.label" title="how.s4.title">
-        <p>{t('how.s4.p1', { w: pyBench.ops.image[0], h: pyBench.ops.image[1] })}</p>
-        <div className="table-wrap glass">
-          <table className="data-table bench-table">
-            <thead>
-              <tr>
-                <th scope="col">{t('how.table.op')}</th>
-                <th scope="col" className="num">
-                  {t('how.table.python')}
-                </th>
-                <th scope="col" className="num">
-                  {t('how.table.ts')}
-                </th>
-                <th scope="col" className="num">
-                  {t('how.table.speedup')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {SPEC.operations.map((op) => {
-                const py = (pyBench.ops.ms as Record<string, number>)[op.id]
-                const ts = (tsBench.ops.ms as Record<string, number>)[op.id]
-                return (
-                  <tr key={op.id}>
-                    <th scope="row">{opLabel(t, has, op.id)}</th>
-                    <td className="num" dir="ltr">
-                      {fmt(py)}
-                    </td>
-                    <td className="num" dir="ltr">
-                      {fmt(ts)}
-                    </td>
-                    <td className="num" dir="ltr">
-                      {num(py / Math.max(ts, 0.1), 0)}×
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        <p className="caption" dir="ltr">
-          {pyBench.runtime} · {tsBench.runtime}
-        </p>
-      </Section>
-
-      <Section id="s5" label="how.s5.label" title="how.s5.title">
+      <Section id="s4" label="how.s5.label" title="how.s5.title">
         <ul className="checks" role="list">
           <li>{t('how.s5.privacy')}</li>
           {PWA && <li>{t('how.s5.offline')}</li>}
           <li>{t('how.s5.a11y')}</li>
           <li>{t('how.s5.tests')}</li>
         </ul>
-        <h4>{t('how.cliTitle')}</h4>
-        <pre className="code-block" dir="ltr" tabIndex={0}>
-          <code>{`pip install ./python
-pixel-lab run photo.jpg -o sketch.png -s grayscale -s canny:sigma=2
-pixel-lab run photo.jpg -o out.png --recipe pixel-lab-recipe.json
-pixel-lab edit photo.jpg   # interactive, with undo/redo`}</code>
-        </pre>
       </Section>
 
       <section className="cta glass" aria-labelledby="cta-title">

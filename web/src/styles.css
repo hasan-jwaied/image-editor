@@ -116,7 +116,9 @@ html {
 
 body {
   margin: 0;
+  min-height: 100vh; /* fallback for Safari < 15.4 */
   min-height: 100svh;
+  -webkit-tap-highlight-color: transparent;
   background: var(--canvas);
   color: var(--label);
   font-family: var(--font);
@@ -165,6 +167,16 @@ select {
 
 button {
   cursor: pointer;
+}
+
+/* No double-tap-to-zoom delay on controls. */
+button,
+a,
+input,
+select,
+label,
+summary {
+  touch-action: manipulation;
 }
 
 button:disabled {
@@ -561,7 +573,6 @@ option {
   height: var(--nav-h);
   max-width: 1024px; /* the portfolio's max-w-5xl, so the bar doesn't jump between pages */
   margin: 0 auto;
-  padding: 0 24px;
 }
 
 .nav-back {
@@ -777,8 +788,9 @@ option {
 
 .stage {
   min-width: 0;
+  height: min(64vh, 580px);
   height: min(64svh, 580px);
-  min-height: 380px;
+  min-height: 360px;
 }
 
 .inspector {
@@ -786,9 +798,12 @@ option {
   flex-direction: column;
 }
 
-@media (min-width: 760px) and (max-width: 1099px) {
+/* Two columns from 900px (iPad landscape, small laptops); phones and iPad
+   portrait get one column, where the viewer can use the full width. */
+@media (min-width: 900px) and (max-width: 1099px) {
   .lab {
     grid-template-columns: minmax(0, 1fr) 344px;
+    height: calc(100vh - var(--nav-h));
     height: calc(100svh - var(--nav-h));
     min-height: 640px;
   }
@@ -803,6 +818,7 @@ option {
 @media (min-width: 1100px) {
   .lab {
     grid-template-columns: 244px minmax(0, 1fr) 384px;
+    height: calc(100vh - var(--nav-h));
     height: calc(100svh - var(--nav-h));
     min-height: 660px;
   }
@@ -1724,6 +1740,7 @@ input[type='range']::-moz-range-thumb {
 }
 
 .sat-window {
+  fill: rgb(0 113 227 / 0.26); /* fallback for Safari < 16.2 */
   fill: color-mix(in srgb, var(--series-1) 26%, transparent);
   stroke: var(--series-1);
   stroke-width: 1.5;
@@ -2216,6 +2233,41 @@ input[type='range']::-moz-range-thumb {
   border-inline-end-width: 5px;
 }
 
+.disclosure summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-text);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  list-style: none;
+}
+
+.disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-top: -3px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.disclosure[open] summary::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+
+.disclosure[open] summary {
+  margin-bottom: 14px;
+}
+
 .table-wrap {
   overflow-x: auto;
   padding: 6px 16px;
@@ -2317,8 +2369,58 @@ input[type='range']::-moz-range-thumb {
 }
 
 /* ==========================================================================
-   Small screens
+   Devices: notches, small screens, touch
    ========================================================================== */
+
+/* Keep content clear of the notch and rounded corners (viewport-fit=cover). */
+.nav-inner,
+.hero,
+.lab,
+.article,
+.footer {
+  padding-left: max(var(--gutter, 16px), env(safe-area-inset-left));
+  padding-right: max(var(--gutter, 16px), env(safe-area-inset-right));
+}
+
+.nav-inner,
+.hero,
+.article,
+.footer {
+  --gutter: 24px;
+}
+
+.footer {
+  padding-bottom: max(48px, calc(env(safe-area-inset-bottom) + 24px));
+}
+
+@media (max-width: 899px) {
+  .inspector {
+    min-height: 460px;
+  }
+  .lab {
+    --gutter: 10px;
+  }
+  /* One column: size the viewer from its width so the image fills it. */
+  .stage,
+  .viewer {
+    height: auto;
+    min-height: 0;
+  }
+  .viewport {
+    flex: none;
+    height: 72vw; /* fallback for Safari < 15 (no aspect-ratio) */
+    aspect-ratio: 4 / 3;
+    height: auto;
+    max-height: 62vh;
+    max-height: 62svh;
+    min-height: 240px;
+  }
+}
+
+.show-sm {
+  display: none;
+}
+
 @media (max-width: 759px) {
   .topnav,
   .brand-name {
@@ -2330,19 +2432,184 @@ input[type='range']::-moz-range-thumb {
   }
   .hero {
     padding-top: 36px;
+    padding-bottom: 28px;
   }
   .hide-sm {
     display: none;
   }
-  .inspector {
-    min-height: 440px;
+  .show-sm {
+    display: inline;
   }
   .viewer-foot .working-size .muted {
     display: none;
   }
-  .lab {
-    padding-inline: 10px;
+  .article {
+    margin-top: 56px;
   }
+  .case-section {
+    padding: 40px 0;
+  }
+  .cta {
+    padding: 48px 20px;
+  }
+}
+
+/* The architecture diagram reads top to bottom on phones. */
+@media (max-width: 600px) {
+  .flow-lane {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .flow-lane + .flow-lane {
+    padding-top: 12px;
+    border-top: 1px solid var(--separator);
+  }
+  .flow-arrow {
+    width: 1.5px;
+    height: 12px;
+    margin-inline-start: 22px;
+  }
+  .flow-arrow::after,
+  .flow-arrow.back::after {
+    inset: auto auto -1px -4px;
+    border: 5px solid transparent;
+    border-top-color: var(--label-3);
+    border-bottom-width: 0;
+  }
+  .flow-arrow.back::after {
+    inset: -1px auto auto -4px;
+    border-top-color: transparent;
+    border-top-width: 0;
+    border-bottom-width: 5px;
+    border-bottom-color: var(--label-3);
+  }
+}
+
+/* iPhone SE / older small phones. */
+@media (max-width: 400px) {
+  .nav-inner,
+  .hero,
+  .article,
+  .footer {
+    --gutter: 16px;
+  }
+  .nav-back span,
+  .nav-divider {
+    display: none;
+  }
+  .nav-back {
+    padding-inline: 6px;
+  }
+  .presets {
+    gap: 6px;
+  }
+  .chip-btn {
+    padding: 0 12px;
+  }
+  .viewer-bar,
+  .viewer-foot {
+    padding: 8px;
+  }
+  .highlights {
+    gap: 10px;
+  }
+  .highlight {
+    padding: 16px;
+  }
+  .hero h1 {
+    font-size: 30px;
+  }
+  .actual-btn,
+  .step-meta {
+    display: none; /* the total above the list still shows the timing */
+  }
+  .tabs button {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+/* Narrow inspector: reorder arrows only on the selected step, names may wrap. */
+@media (max-width: 480px) {
+  .probe.idle {
+    display: none; /* image size; tapping a pixel still shows its values */
+  }
+  .step:not(.selected) .step-move {
+    display: none;
+  }
+  .step-name {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.25;
+  }
+}
+
+/* Phones held sideways: the lab should fit without the hero pushing it away. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    padding-top: 24px;
+    padding-bottom: 20px;
+  }
+  .stage {
+    height: calc(100vh - var(--nav-h) - 24px);
+    height: calc(100svh - var(--nav-h) - 24px);
+    min-height: 300px;
+  }
+}
+
+/* Touch screens: 16px text in fields (iOS Safari zooms into anything
+   smaller), larger tap targets, and no hover-only affordances. */
+@media (pointer: coarse) {
+  input,
+  select {
+    font-size: 16px;
+  }
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .icon-btn.sm {
+    width: 38px;
+    height: 38px;
+  }
+  .btn {
+    min-height: 44px;
+  }
+  .btn.sm {
+    min-height: 38px;
+  }
+  .op-btn {
+    min-height: 44px;
+  }
+  .segmented button,
+  .tabs button {
+    min-height: 36px;
+  }
+  .sample-thumb {
+    width: 48px;
+    height: 36px;
+  }
+  .step-title {
+    min-height: 50px;
+  }
+  input[type='range'] {
+    height: 36px;
+  }
+}
+
+@media (hover: none) {
+  .op-add {
+    opacity: 1;
+  }
+}
+
+.hold-btn {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -9,14 +9,6 @@ export function roundHalfEven(x: number): number {
   return r - x === 0.5 && r % 2 !== 0 ? r - 1 : r
 }
 
-export function clampByte(v: number): number {
-  return v < 0 ? 0 : v > 255 ? 255 : v
-}
-
-export function toByte(x: number): number {
-  return clampByte(roundHalfEven(x))
-}
-
 /** Index lookup for clamp-to-edge borders: `idx[i + pad]` = clamp(i, 0, n-1). */
 export function clampedIndex(n: number, pad: number): Int32Array {
   const idx = new Int32Array(n + 2 * pad)
