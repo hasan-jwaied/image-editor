@@ -1,4 +1,4 @@
-"""Geometric transforms. These move pixels around, so alpha moves with them."""
+"""Geometric transforms move alpha along with the color planes."""
 
 from __future__ import annotations
 
@@ -14,7 +14,6 @@ def flip(image: Image, axis: str) -> Image:
 
 
 def rotate(image: Image, direction: str) -> Image:
-    """Rotate by a quarter or half turn using transposition (``zip(*rows)``)."""
     if direction == "cw":
         return map_planes(image, lambda plane: [list(col) for col in zip(*plane[::-1])])
     if direction == "ccw":
@@ -25,11 +24,7 @@ def rotate(image: Image, direction: str) -> Image:
 
 
 def _sample_positions(src: int, dst: int) -> tuple[list[int], list[int], list[float]]:
-    """For each destination index, the two source indices and the blend weight.
-
-    Uses pixel-centre alignment: destination pixel ``i`` covers the same
-    fraction of the image as the source position ``(i + 0.5) * src / dst - 0.5``.
-    """
+    """Two source indices and a blend weight per destination index, pixel-centre aligned."""
     ratio = src / dst
     lo, hi, frac = [], [], []
     for i in range(dst):
@@ -45,12 +40,11 @@ def _sample_positions(src: int, dst: int) -> tuple[list[int], list[int], list[fl
     return lo, hi, frac
 
 
-MAX_PIXELS = 50_000_000
-"""Upper bound on any result, so repeated upscaling can't exhaust memory. Same as TypeScript."""
+MAX_PIXELS = 50_000_000  # stops repeated upscaling from exhausting memory
 
 
 def resize_to(image: Image, width: int, height: int) -> Image:
-    """Bilinear interpolation: blend the four nearest source pixels."""
+    """Bilinear."""
     if width < 1 or height < 1:
         raise ValueError("target size must be at least 1x1")
     if width * height > MAX_PIXELS:
@@ -77,7 +71,6 @@ def resize_to(image: Image, width: int, height: int) -> Image:
 
 
 def resize(image: Image, scale: int) -> Image:
-    """Resize by a percentage, keeping the aspect ratio."""
     width = max(1, round(image.width * scale / 100))
     height = max(1, round(image.height * scale / 100))
     return resize_to(image, width, height)

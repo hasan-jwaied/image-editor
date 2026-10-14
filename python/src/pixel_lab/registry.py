@@ -1,11 +1,4 @@
-"""The operation registry: one declarative entry per operation.
-
-This is the single source of truth for what operations exist and which
-parameters they take. The CLI validates against it, and
-``scripts/generate_spec.py`` exports it to ``spec/operations.json``, which the
-web app uses to build its controls and its tests use to prove the TypeScript
-engine implements exactly the same set.
-"""
+"""Every operation and its parameters. Exported to spec/operations.json for the web app."""
 
 from __future__ import annotations
 
@@ -90,7 +83,6 @@ class Operation:
     params: tuple[Param, ...] = field(default_factory=tuple)
 
     def resolve(self, raw: Mapping[str, Any] | None = None) -> dict[str, ParamValue]:
-        """Fill in defaults and validate every supplied parameter."""
         raw = dict(raw or {})
         known = {p.name for p in self.params}
         unknown = sorted(set(raw) - known)
@@ -218,7 +210,6 @@ def get(op_id: str) -> Operation:
 
 
 def spec() -> dict[str, Any]:
-    """The JSON contract shared with the web app."""
     return {
         "version": 1,
         "categories": [{"id": k, "label": v} for k, v in CATEGORIES.items()],

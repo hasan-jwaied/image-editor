@@ -1,6 +1,5 @@
 import type { MessageKey } from './en'
 
-/** Hebrew. Technical identifiers stay in Latin script. */
 export const he: Record<MessageKey, string> = {
   'app.name': 'Pixel Lab',
   'app.tagline': 'עיבוד תמונה מעקרונות יסוד',

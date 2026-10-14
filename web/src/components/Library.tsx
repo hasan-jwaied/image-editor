@@ -6,11 +6,8 @@ import { opExplain, opLabel } from '../lib/labels'
 import { Check, Plus, Search } from './Icons'
 
 interface Props {
-  /** Operations currently in the pipeline. */
   active: ReadonlySet<string>
-  /** Applied: remove it. Otherwise: show it on its own (the pipeline becomes just this step). */
   onToggle: (op: string) => void
-  /** Stack an operation that isn't applied yet on top of the pipeline. */
   onAdd: (op: string) => void
 }
 

@@ -1,5 +1,3 @@
-"""Algebraic properties every correct implementation must satisfy."""
-
 from __future__ import annotations
 
 from hypothesis import given

@@ -1,9 +1,9 @@
-"""Command-line interface.
+"""pixel-lab command line.
 
 pixel-lab run photo.jpg -o out.png -s gaussian_blur:sigma=2 -s canny
 pixel-lab run photo.jpg -o out.png --recipe recipe.json
-pixel-lab edit photo.jpg          # interactive session with undo/redo
-pixel-lab list                    # every operation and its parameters
+pixel-lab edit photo.jpg
+pixel-lab list
 """
 
 from __future__ import annotations

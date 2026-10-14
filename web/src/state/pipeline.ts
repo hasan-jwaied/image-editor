@@ -1,4 +1,4 @@
-/** Pipeline state with undo/redo. History stores step lists, never images. */
+// History stores step lists, never images.
 import { defaultParams, type ParamValue, type Params } from '../engine/spec'
 
 export interface StepState {
@@ -13,7 +13,7 @@ export interface PipelineState {
   present: StepState[]
   future: StepState[][]
   selectedId: string | null
-  /** Coalesces rapid edits of one control (slider drags) into one undo entry. */
+  /** Merges a slider drag into one undo entry. */
   lastEditKey: string | null
 }
 
@@ -31,7 +31,7 @@ export type Action =
   | { type: 'redo' }
 
 const HISTORY_LIMIT = 100
-/** Longest pipeline; also enforced on shared links, so a crafted link can't tie up the tab. */
+/** Also applied to shared links, so a crafted link can't tie up the tab. */
 export const MAX_STEPS = 32
 let counter = 0
 const newId = () => `s${Date.now().toString(36)}${(counter++).toString(36)}`
@@ -43,10 +43,7 @@ export const makeStep = (op: string, params?: Params, enabled = true): StepState
   enabled,
 })
 
-/**
- * A pipeline holds each operation at most once: repeating one adds nothing a
- * parameter can't do, and keeps every step's effect distinguishable.
- */
+/** Each operation appears at most once. */
 const uniqueOps = (steps: StepState[]) => steps.filter((s, i) => steps.findIndex((t) => t.op === s.op) === i)
 
 export function initialPipeline(steps: StepState[] = []): PipelineState {

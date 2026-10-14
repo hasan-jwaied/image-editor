@@ -18,7 +18,6 @@ export interface Overlay {
 
 interface Props {
   after: Frame | null
-  /** The decoded image before any step; the split's left side. */
   original: Frame | null
   overlay: Overlay | null
   onCloseOverlay: () => void
@@ -52,7 +51,6 @@ export function Viewer(props: Props) {
   const [dragOver, setDragOver] = useState(false)
   const [probe, setProbe] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef<{ kind: 'pan' | 'split'; x: number; y: number; px: number; py: number } | null>(null)
-  // Touch: every finger on the image, and the start of a two-finger pinch.
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const pinchRef = useRef<{ dist: number; scale: number } | null>(null)
 
@@ -71,7 +69,7 @@ export function Viewer(props: Props) {
     return () => ro.disconnect()
   }, [])
 
-  const inset = box.w < 500 ? 12 : 32 // breathing room around the image; less on phones
+  const inset = box.w < 500 ? 12 : 32
   const fit = shown ? Math.min((box.w - inset) / shown.width, (box.h - inset) / shown.height, 4) : 1
   const scale = Math.max(MIN_ZOOM, zoom ?? fit)
   const dispW = shown ? shown.width * scale : 0
@@ -79,7 +77,6 @@ export function Viewer(props: Props) {
   const left = (box.w - dispW) / 2 + (zoom === null ? 0 : pan.x)
   const top = (box.h - dispH) / 2 + (zoom === null ? 0 : pan.y)
 
-  // Reset the view when the image dimensions change (new image, resize step...).
   const dimsKey = shown ? `${shown.width}x${shown.height}` : ''
   useEffect(() => {
     setZoom(null)
@@ -97,7 +94,7 @@ export function Viewer(props: Props) {
     (factor: number, cx = box.w / 2, cy = box.h / 2) => {
       const next = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scale * factor))
       const real = next / scale
-      // keep the point under the cursor fixed: new offset = c - (c - old) * real
+      // keep the point under the cursor fixed
       const newLeft = cx - (cx - left) * real
       const newTop = cy - (cy - top) * real
       const w = (shown?.width ?? 0) * next
@@ -146,7 +143,7 @@ export function Viewer(props: Props) {
         e.currentTarget.setPointerCapture(e.pointerId)
         return
       }
-      // No hover on touch screens: a tap inspects the pixel under the finger.
+      // no hover on touch screens, so a tap inspects
       if (!target.closest('.split-handle')) inspect(e.clientX, e.clientY)
     }
     if (target.closest('.split-handle')) {
@@ -279,7 +276,7 @@ export function Viewer(props: Props) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         onPointerLeave={(e) => {
-          // Touch screens send a leave after every tap; keep the tapped pixel.
+          // touch sends a leave after every tap
           if (e.pointerType !== 'mouse') return
           setProbe(null)
           props.onHover(null)

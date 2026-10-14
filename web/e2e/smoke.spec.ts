@@ -4,7 +4,7 @@ import { settled, showPipeline } from './helpers'
 /** Phones start at a 1024px working size, laptops at 1600px (the 1428 × 968 sample fits as is). */
 const sampleSize = (isMobile: boolean) => (isMobile ? '1,024 × 694' : '1,428 × 968')
 
-/** The starting size also depends on the CPU, so tests fix the core count instead of using the runner's. */
+/** The starting size depends on the core count, so tests set it. */
 const withCores = (page: Page, n: number) =>
   page.addInitScript((n) => Object.defineProperty(Navigator.prototype, 'hardwareConcurrency', { get: () => n }), n)
 
@@ -95,7 +95,7 @@ test('operations toggle: click applies alone or removes, + stacks once', async (
   await click('Apply Invert')
   expect(await stepNames()).toEqual(['Invert'])
 
-  // "+" stacks an operation that isn't applied yet; applied ones show a check, not "+".
+  // "+" stacks another operation; applied ones show a check instead.
   await click('Add Sepia to the pipeline')
   expect(await stepNames()).toEqual(['Invert', 'Sepia'])
   await library()
@@ -143,7 +143,7 @@ test('panels hand the scroll on to the page', async ({ page, isMobile }) => {
     window.scrollTo({ top: document.getElementById('lab')!.offsetTop - 48, behavior: 'instant' }),
   )
   for (const panel of ['.library-panel', '.inspector']) {
-    // Scroll the panel to its end first; the next wheel gesture must reach the page.
+    // Once the panel is at its end, the wheel must scroll the page.
     await page.locator(panel).evaluate((el) => (el.scrollTop = el.scrollHeight))
     const before = await page.evaluate(() => window.scrollY)
     await page.locator(panel).hover()
@@ -162,7 +162,6 @@ test('explainers respond to the image', async ({ page, isMobile }) => {
       Buffer.from(JSON.stringify({ version: 1, steps: [{ op: 'convolve', params: {} }] })).toString('base64url'),
   )
   await settled(page)
-  // hover() scrolls the image into view and moves the pointer over its centre.
   await page.locator('.canvas-wrap').hover()
   await expect(page.locator('.kernel-inspector .sum').first()).toContainText('Σ')
 })

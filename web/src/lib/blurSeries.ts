@@ -4,11 +4,7 @@ import type { MessageKey } from '../i18n/en'
 type T = (key: MessageKey) => string
 type Timings = { sat: (number | null)[]; separable: (number | null)[]; naive: (number | null)[] }
 
-/**
- * The three blur algorithms, in the same colours wherever they are compared.
- * Three at most: with every line on screen at once, a fourth colour cannot stay
- * distinguishable for colour-blind readers (validated palette, all pairs).
- */
+// At most three series: a fourth colour isn't reliably distinguishable for colour-blind readers.
 export const blurSeries = (t: T, ms: Timings): Series[] => [
   { id: 'sat', label: t('explain.raceSat'), note: 'O(N)', color: 'var(--series-1)', values: ms.sat },
   {

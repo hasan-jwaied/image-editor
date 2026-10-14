@@ -3,7 +3,6 @@ import { useI18n } from '../../i18n'
 import { Tooltip } from './Tooltip'
 import { useWidth } from './useWidth'
 
-/** Columns for 1-D kernel weights (Gaussian), baseline-anchored with rounded tops. */
 export function WeightsChart({ title, weights }: { title: string; weights: ArrayLike<number> }) {
   const { t, num } = useI18n()
   const [ref, width] = useWidth<HTMLDivElement>()

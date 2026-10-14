@@ -1,17 +1,13 @@
-"""Floyd-Steinberg error-diffusion dithering."""
-
 from __future__ import annotations
 
 from ..image import Channel, Image, map_color
 
 
 def _dither_channel(channel: Channel, levels: int) -> Channel:
-    """Quantize each pixel, then push its rounding error onto unvisited neighbours.
+    """Spread each pixel's rounding error to its unvisited neighbours:
 
-    ::
-
-                 *    7/16
-          3/16  5/16  1/16
+           *    7/16
+    3/16  5/16  1/16
     """
     steps = levels - 1
     palette = [round(q * 255 / steps) for q in range(levels)]

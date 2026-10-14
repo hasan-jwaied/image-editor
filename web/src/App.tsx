@@ -25,7 +25,7 @@ import { EngineClient } from './worker/client'
 type Tab = 'add' | 'pipeline' | 'explain'
 const SIZE_KEY = 'pixel-lab:working-size'
 
-/** A phone or a low-core device starts at 1024 px (seam carving costs ~width² × height). */
+// Phones and slow CPUs start smaller: seam carving costs about width² × height.
 function defaultSize(): number {
   const small = window.matchMedia('(max-width: 899px)').matches
   const slow = (navigator.hardwareConcurrency || 8) <= 4
@@ -41,11 +41,7 @@ function storedSize(): number {
   }
 }
 
-/**
- * The lab starts with an empty pipeline: nothing runs until the visitor picks
- * an operation or a recipe. A shared link (#r=…) is the one exception; it is
- * applied once and then removed from the address bar, so a reload starts clean.
- */
+// Start empty. A shared link (#r=…) is applied once, then removed from the URL.
 function initialSteps() {
   if (!window.location.hash.startsWith('#r=')) return []
   const shared = decodeRecipeHash(window.location.hash)
@@ -53,7 +49,7 @@ function initialSteps() {
   return shared ? shared.map((s) => makeStep(s.op, s.params, s.enabled)) : []
 }
 
-/** True only after `value` has been true for `delay` ms (avoids spinner flicker). */
+// Avoids spinner flicker on fast runs.
 function useDelayed(value: boolean, delay = 180) {
   const [on, setOn] = useState(false)
   useEffect(() => {
@@ -76,7 +72,7 @@ export function App() {
   const [input, setInput] = useState<{ blob: Blob; sample: string | null } | null>(null)
   const [source, setSource] = useState<Img | null>(null)
   const [loading, setLoading] = useState(false)
-  // Stored as data, translated when rendered, so switching language doesn't reload the image.
+  // Kept untranslated so switching language doesn't reload the image.
   const [loadError, setLoadError] = useState<{ tooLarge: number } | 'decode' | null>(null)
   const [workingSize, setWorkingSize] = useState(storedSize)
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null)
@@ -101,8 +97,7 @@ export function App() {
     void loadSample(SAMPLES[0])
   }, [loadSample])
 
-  // Section links such as …/#how: the target only exists once React has rendered,
-  // and its position settles once the web font has replaced the fallback.
+  // Section links (#how) can only scroll once rendered and the font has loaded.
   useEffect(() => {
     const id = window.location.hash.slice(1)
     if (id) void document.fonts.ready.then(() => document.getElementById(id)?.scrollIntoView())
@@ -127,12 +122,10 @@ export function App() {
 
   const processed = useProcessor(client, source, steps)
 
-  // Which step the viewer shows: the selected one, else the last.
   const selIndex = steps.findIndex((s) => s.id === pipeline.selectedId)
   const viewIndex = selIndex >= 0 ? selIndex : steps.length - 1
   const selected = selIndex >= 0 ? steps[selIndex] : null
   const outputImg = viewIndex >= 0 ? (processed.images[viewIndex] ?? null) : source
-  // Without steps there is nothing to compare or export, so these stay empty.
   const inputImg = viewIndex > 0 ? (processed.images[viewIndex - 1] ?? null) : viewIndex === 0 ? source : null
   const finalImg = steps.length ? (processed.images[steps.length - 1] ?? null) : null
   const viewCurrent = viewIndex < 0 || processed.keys[viewIndex] === processed.currentKeys[viewIndex]
@@ -149,14 +142,13 @@ export function App() {
         (processed.fraction !== null ? ` ${Math.round(processed.fraction * 100)}%` : '')
     : null
 
-  // An overlay belongs to one step's state; drop it when that changes.
   const viewKey = processed.currentKeys[viewIndex]
   useEffect(() => setOverlay(null), [pipeline.selectedId, viewKey, source])
 
   const chooseWorkingSize = (size: number) => {
     setWorkingSize(size)
     try {
-      localStorage.setItem(SIZE_KEY, String(size)) // only an explicit choice is remembered
+      localStorage.setItem(SIZE_KEY, String(size))
     } catch {
       /* not persisted */
     }
@@ -185,8 +177,7 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // Clicking an operation shows it on its own, so its effect stays readable;
-  // clicking it again removes it. "+" stacks an operation that isn't applied yet.
+  // Click: show this operation alone, or remove it if applied. "+": stack it.
   const toggleOp = (op: string) => {
     const applied = steps.find((s) => s.op === op)
     if (applied) {

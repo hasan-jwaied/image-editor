@@ -1,10 +1,4 @@
-/**
- * The image model, mirroring python/src/pixel_lab/image.py.
- *
- * Planes are stored row-major in flat Uint8Arrays. `color` holds one plane
- * (grayscale) or three (R, G, B); `alpha` is optional and is only moved by
- * geometric operations, never recolored.
- */
+// Port of python/src/pixel_lab/image.py, with each plane in a flat Uint8Array.
 export interface Img {
   readonly width: number
   readonly height: number
@@ -40,17 +34,14 @@ export function planesOf(img: Img): Uint8Array[] {
   return img.alpha ? [...img.color, img.alpha] : [...img.color]
 }
 
-/** Apply `fn` to each color plane; alpha is shared untouched. */
 export function mapColor(img: Img, fn: (plane: Uint8Array) => Uint8Array): Img {
   return { width: img.width, height: img.height, color: img.color.map(fn), alpha: img.alpha }
 }
 
-/** Apply a geometric transform to every plane, including alpha. */
 export function mapPlanes(img: Img, width: number, height: number, fn: (plane: Uint8Array) => Uint8Array): Img {
   return makeImg(width, height, img.color.map(fn), img.alpha ? fn(img.alpha) : null)
 }
 
-/** Interleave into RGBA for a canvas. */
 export function toRGBA(img: Img, out?: Uint8ClampedArray<ArrayBuffer>): Uint8ClampedArray<ArrayBuffer> {
   const n = img.width * img.height
   const data = out ?? new Uint8ClampedArray(n * 4)
@@ -65,7 +56,7 @@ export function toRGBA(img: Img, out?: Uint8ClampedArray<ArrayBuffer>): Uint8Cla
   return data
 }
 
-/** De-interleave canvas RGBA. Fully opaque alpha is dropped, as in Python's loader. */
+/** Fully opaque alpha is dropped, as in Python's loader. */
 export function fromRGBA(data: Uint8ClampedArray | Uint8Array, width: number, height: number): Img {
   const n = width * height
   const r = new Uint8Array(n)

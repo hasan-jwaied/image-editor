@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-/**
- * Runs `load` shortly after `key` (or `input`) stops changing, e.g. while a
- * slider is dragged, and ignores results that arrive after a newer request.
- * The previous result stays visible until the new one is ready.
- */
+/** Debounced `load`; stale results are dropped and the last one stays visible. */
 export function useWorkerResult<T>(load: () => Promise<T>, key: string, input: unknown, delay = 120): T | null {
   const [result, setResult] = useState<T | null>(null)
   const loadRef = useRef(load)

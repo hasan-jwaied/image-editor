@@ -4,11 +4,6 @@ import { Back, Github, Logo, Moon, Sun } from './Icons'
 
 export const REPO_URL = 'https://github.com/hasan-jwaied/image-editor'
 
-/**
- * Full-width translucent bar, the same construction as the portfolio's
- * (.glass-nav): 48px tall, blurred, a hairline underneath and a scroll-driven
- * progress line.
- */
 export function Header({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onToggleTheme: () => void }) {
   const { t, lang, setLang } = useI18n()
   return (

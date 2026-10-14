@@ -1,7 +1,4 @@
-/**
- * Typed view of spec/operations.json, generated from the Python registry
- * (python/scripts/generate_spec.py). The UI builds its controls from this.
- */
+// spec/operations.json is generated from the Python registry.
 import raw from '../../../spec/operations.json'
 
 type ParamType = 'int' | 'float' | 'enum' | 'kernel'
@@ -36,7 +33,7 @@ interface Spec {
 }
 
 export const SPEC = raw as Spec
-// No prototype: an id like "__proto__" from a shared link must not resolve to anything.
+// No prototype, so "__proto__" from a shared link resolves to nothing.
 const OP_SPECS: Record<string, OpSpec | undefined> = Object.assign(
   Object.create(null) as Record<string, OpSpec>,
   Object.fromEntries(SPEC.operations.map((op) => [op.id, op])),
@@ -55,7 +52,7 @@ export function defaultParams(opId: string): Params {
   return Object.fromEntries(spec.params.map((p) => [p.name, Array.isArray(p.default) ? [...p.default] : p.default]))
 }
 
-/** Validate and fill defaults, with the same rules as Python's Param.coerce. */
+/** Same rules as Python's Param.coerce. */
 export function resolveParams(opId: string, raw: Record<string, unknown> = {}): Params {
   const spec = opSpec(opId)
   const known = new Set(spec.params.map((p) => p.name))

@@ -12,7 +12,6 @@ export class DecodeError extends Error {
 
 type Source = { draw: CanvasImageSource; width: number; height: number; release: () => void }
 
-/** createImageBitmap where available; an <img> element on older Safari. */
 async function load(blob: Blob): Promise<Source> {
   if (typeof createImageBitmap === 'function') {
     try {
@@ -34,11 +33,7 @@ async function load(blob: Blob): Promise<Source> {
   return { draw: img, width: img.naturalWidth, height: img.naturalHeight, release: () => URL.revokeObjectURL(url) }
 }
 
-/**
- * Decode any browser-supported image and fit it within `maxSide`.
- * The browser decodes the file and does the initial downscale (I/O, like
- * Pillow on the Python side); every operation after that is ours.
- */
+/** The browser decodes and downscales (like Pillow on the Python side); everything after is ours. */
 export async function decodeImage(blob: Blob, maxSide: number): Promise<Img> {
   const source = await load(blob)
   const { width, height } = source

@@ -1,10 +1,8 @@
-"""Benchmark the Python engine (and the original v1 code) for the case study.
+"""Benchmark the Python engine and the original v1 code.
 
-    python scripts/benchmark.py path/to/photo.jpg
+    python scripts/benchmark.py photo.jpg
 
-Writes bench/python.json plus bench/input.bin and bench/input_rgb.bin (the
-exact pixels used, so web/bench/bench.ts times the TypeScript engine on
-identical input).
+Writes bench/python.json, plus the input pixels that web/bench/bench.ts reuses.
 """
 
 from __future__ import annotations
@@ -31,7 +29,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "bench"
 
 
-# --- v1, verbatim from the original image_editor.py / image_helper.py --------
+# v1, copied verbatim from the original image_editor.py and image_helper.py
 
 
 def v1_pad_image(image: list[list[int]], pad_size: int) -> list[list[int]]:
@@ -72,9 +70,6 @@ def v1_save(image_as_lists: list[list[list[int]]]) -> PILImage.Image:
         for j in range(height):
             im.putpixel((i, j), image_as_lists_copy[j][i])
     return im
-
-
-# --- harness -------------------------------------------------------------------
 
 
 def timed(fn: Callable[[], Any], repeat: int = 1) -> float:

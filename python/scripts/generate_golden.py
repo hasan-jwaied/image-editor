@@ -1,10 +1,6 @@
-"""Generate spec/golden/golden.json: reference outputs from the Python engine.
+"""Write spec/golden/golden.json. The TypeScript tests must reproduce it exactly.
 
-The TypeScript engine's test suite replays every case and must reproduce the
-same pixels, which is how we know the two implementations agree.
-
-    python scripts/generate_golden.py          # regenerate
-    python scripts/generate_golden.py --check  # fail if the file is stale (CI)
+python scripts/generate_golden.py [--check]
 """
 
 from __future__ import annotations
@@ -21,9 +17,6 @@ from pixel_lab import Image, registry
 from pixel_lab.recipe import Step, run
 
 OUT = Path(__file__).resolve().parents[2] / "spec" / "golden" / "golden.json"
-
-
-# --- deterministic fixtures ---------------------------------------------------
 
 
 def _lcg(seed: int) -> Iterator[int]:
@@ -101,9 +94,6 @@ PIPELINES: dict[str, list[Step]] = {
     "chain": [Step("resize", {"scale": 150}), Step("sharpen"), Step("equalize"),
               Step("rotate", {"direction": "ccw"}), Step("sepia")],
 }  # fmt: skip
-
-
-# --- encoding -----------------------------------------------------------------
 
 
 def encode(image: Image) -> dict[str, Any]:

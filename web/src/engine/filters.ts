@@ -1,9 +1,5 @@
-/**
- * Neighbourhood filters, mirroring python/src/pixel_lab/ops/filters.py.
- *
- * Accumulation order matters for bit-exact agreement with Python: taps are
- * added one at a time in kernel order, starting from 0.
- */
+// Port of python/src/pixel_lab/ops/filters.py. Taps are summed in kernel order,
+// starting from 0, to match Python's floating-point results exactly.
 import { mapColor, type Img } from './image'
 import { clampedIndex, integralImage, roundHalfEven } from './math'
 
@@ -33,7 +29,7 @@ const KERNEL_PRESETS: Record<string, Kernel> = {
   ],
 }
 
-/** True convolution (kernel flipped), clamp-to-edge borders. O(N·k²). */
+/** True convolution (kernel flipped), clamped edges. O(N·k²). */
 function convolveChannel(p: Uint8Array, w: number, h: number, kernel: Kernel): Uint8Array {
   const size = kernel.length
   if (size % 2 === 0 || kernel.some((row) => row.length !== size)) {
@@ -84,7 +80,7 @@ export function convolve(img: Img, preset: string, weights?: number[]): Img {
   return mapColor(img, (p) => convolveChannel(p, img.width, img.height, kernel))
 }
 
-/** Box blur as a plain O(N·k²) convolution: the benchmark baseline. */
+/** O(N·k²) baseline for the benchmark. */
 export function boxBlurNaiveChannel(p: Uint8Array, w: number, h: number, radius: number): Uint8Array {
   const size = 2 * radius + 1
   const wt = 1 / (size * size)
@@ -96,7 +92,7 @@ export function boxBlurNaiveChannel(p: Uint8Array, w: number, h: number, radius:
   )
 }
 
-/** Window mean via a summed-area table: 4 lookups per pixel, any radius. O(N). */
+/** Summed-area table: 4 lookups per pixel at any radius. O(N). */
 export function boxBlurChannel(p: Uint8Array, w: number, h: number, radius: number): Uint8Array {
   if (radius <= 0) return p.slice()
   const size = 2 * radius + 1
@@ -128,7 +124,7 @@ export function gaussianKernel(sigma: number): Float64Array {
   return weights.map((v) => v / total)
 }
 
-/** Separable Gaussian: a horizontal then a vertical 1-D pass. O(N·k). */
+/** Horizontal then vertical 1-D pass. O(N·k). */
 export function gaussianChannel(p: Uint8Array, w: number, h: number, sigma: number): Uint8Array {
   const weights = gaussianKernel(sigma)
   const n = weights.length
@@ -159,7 +155,7 @@ export function gaussianChannel(p: Uint8Array, w: number, h: number, sigma: numb
 export const gaussianBlur = (img: Img, sigma: number) =>
   mapColor(img, (p) => gaussianChannel(p, img.width, img.height, sigma))
 
-/** Unsharp mask: add back `amount` times what the blur removed. */
+/** Unsharp mask. */
 export function sharpen(img: Img, amount: number, sigma: number): Img {
   return mapColor(img, (p) => {
     const blurred = gaussianChannel(p, img.width, img.height, sigma)

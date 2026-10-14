@@ -1,4 +1,3 @@
-/** Maps every operation id in the shared spec to its TypeScript implementation. */
 import { dither } from './dither'
 import { adaptiveThreshold, canny, sobel } from './edges'
 import { boxBlur, convolve, gaussianBlur, sharpen } from './filters'

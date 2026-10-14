@@ -1,8 +1,4 @@
-/**
- * Benchmark the TypeScript engine on the exact pixels the Python benchmark
- * used (bench/input.bin, bench/input_rgb.bin). Run python/scripts/benchmark.py
- * first, then:  npm run bench
- */
+// Times the TypeScript engine on the pixels python/scripts/benchmark.py saved. Run that first.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { boxBlurChannel, boxBlurNaiveChannel, gaussianChannel } from '../src/engine/filters'
 import { makeImg, type Img } from '../src/engine/image'

@@ -1,8 +1,4 @@
-"""Reading and writing image files.
-
-Pillow is used here and only here, to decode and encode file formats. It
-never touches pixels in between: every transform lives in ``pixel_lab.ops``.
-"""
+"""Loading and saving. Pillow handles file formats only, never pixel work."""
 
 from __future__ import annotations
 
@@ -50,10 +46,7 @@ def load_image(path: str | Path) -> Image:
 
 
 def save_image(image: Image, path: str | Path) -> Path:
-    """Save, choosing the format from the file extension.
-
-    Formats without transparency get the alpha plane composited over white.
-    """
+    """Save, picking the format from the extension. Alpha is flattened onto white if needed."""
     path = Path(path)
     suffix = path.suffix.lower()
     if suffix not in WRITABLE:

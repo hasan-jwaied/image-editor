@@ -1,4 +1,4 @@
-/** Floyd–Steinberg dithering, mirroring python/src/pixel_lab/ops/dither.py. */
+// Port of python/src/pixel_lab/ops/dither.py.
 import { mapColor, type Img } from './image'
 import { roundHalfEven } from './math'
 

@@ -4,14 +4,13 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 90_000,
   workers: process.env.CI ? 1 : 2,
-  // On GitHub, failures are also posted as annotations on the commit and pull request.
+  // Annotations show failures on GitHub without opening the job log.
   reporter: process.env.CI ? [['github'], ['list']] : 'list',
-  // E2E_BASE_URL runs the same suite against another deployment, e.g. the
-  // portfolio's copy: E2E_BASE_URL=http://localhost:3000/lab/ npx playwright test
+  // E2E_BASE_URL=http://localhost:3000/lab/ tests the portfolio's copy instead.
   use: { baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:4173/', trace: 'retain-on-failure' },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
-    // The feature walkthrough and the device matrix set their own viewports, so they run once.
+    // These set their own viewports.
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testIgnore: ['**/features.spec.ts', '**/devices.spec.ts'] },
   ],
   webServer: process.env.E2E_BASE_URL

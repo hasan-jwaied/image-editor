@@ -28,7 +28,7 @@ function initialLang(): Lang {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored === 'en' || stored === 'he') return stored
   } catch {
-    /* storage unavailable (private mode, sandbox): fall through */
+    /* storage blocked */
   }
   const nav = (typeof navigator !== 'undefined' ? navigator.language : 'en').slice(0, 2)
   return nav === 'he' ? 'he' : 'en'
@@ -48,7 +48,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY, l)
     } catch {
-      /* not persisted; fine */
+      /* not saved */
     }
   }, [])
 

@@ -1,7 +1,4 @@
-/**
- * Recipes: the JSON format shared with the Python CLI
- * (python/src/pixel_lab/recipe.py), plus URL-hash sharing.
- */
+// Same JSON as python/src/pixel_lab/recipe.py, also used in share links.
 import { defaultParams, isOp, resolveParams, type ParamValue, type Params } from '../engine/spec'
 import { MAX_STEPS } from './pipeline'
 
@@ -27,7 +24,7 @@ export function toRecipe(steps: { op: string; params: Params; enabled: boolean }
   }
 }
 
-/** Drop parameters left at their defaults, and custom kernel weights unless used. */
+/** Drops defaults, and kernel weights unless the preset is custom. */
 function minimalParams(op: string, params: Params): Params {
   const defaults = defaultParams(op)
   const out: Params = {}
@@ -38,7 +35,7 @@ function minimalParams(op: string, params: Params): Params {
   return out
 }
 
-/** Shared links are untrusted; a recipe longer than any valid one is rejected unread. */
+/** Links are untrusted: anything longer than a valid recipe is rejected unread. */
 const MAX_HASH_LENGTH = 8192
 
 export function parseRecipe(data: unknown): RecipeStep[] {
@@ -81,7 +78,6 @@ function formatValue(v: ParamValue): string {
   return Array.isArray(v) ? v.join(',') : String(v)
 }
 
-/** The equivalent Python CLI invocation, for the "run it in Python" panel. */
 export function cliCommand(recipe: Recipe, input = 'photo.jpg', output = 'out.png'): string {
   const steps = recipe.steps
     .filter((s) => s.enabled !== false)

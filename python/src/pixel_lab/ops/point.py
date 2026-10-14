@@ -1,9 +1,4 @@
-"""Point operations: each output pixel depends only on the same input pixel.
-
-Single-channel point operations are precomputed into a 256-entry look-up
-table (LUT), so the per-pixel work is one list index regardless of how
-expensive the formula is.
-"""
+"""Point operations. Single-channel ones run through a 256-entry lookup table."""
 
 from __future__ import annotations
 
@@ -19,7 +14,7 @@ def apply_lut(image: Image, lut: LUT) -> Image:
 
 
 def luma(image: Image) -> Channel:
-    """Rec. 601 luma, the perceived brightness of each pixel."""
+    """Rec. 601 luma."""
     if image.is_gray:
         return image.color[0]
     r, g, b = image.color
@@ -51,13 +46,12 @@ def contrast(image: Image, amount: int) -> Image:
 
 
 def posterize(image: Image, levels: int) -> Image:
-    """Quantize every channel to ``levels`` evenly spaced values."""
     step = 255 / (levels - 1)
     return apply_lut(image, [round(math.floor(p * levels / 256) * step) for p in range(256)])
 
 
 def sepia(image: Image) -> Image:
-    """The classic sepia color matrix. Grayscale input is promoted to RGB."""
+    """Grayscale input becomes RGB."""
     r, g, b = image.color * 3 if image.is_gray else image.color
 
     def mix(cr: float, cg: float, cb: float) -> Channel:

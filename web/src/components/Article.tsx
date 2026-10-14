@@ -12,11 +12,6 @@ import { LineChart } from './charts/LineChart'
 import { REPO_URL } from './Header'
 import { Github } from './Icons'
 
-/**
- * The "How it's built" case study, laid out like the portfolio's project
- * pages: highlight cards with real numbers, then sections with a short label
- * on the inline start and the content beside it.
- */
 function Section({
   id,
   label,

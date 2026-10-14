@@ -1,5 +1,3 @@
-"""Edge detection: Sobel gradients, the Canny detector and adaptive thresholding."""
-
 from __future__ import annotations
 
 import math
@@ -13,7 +11,6 @@ Gradient = list[list[int]]
 
 
 def sobel_gradients(channel: Channel) -> tuple[Gradient, Gradient]:
-    """Horizontal and vertical derivatives using the 3x3 Sobel operators."""
     p = pad_edge(channel, 1)
     width = len(channel[0])
     gx: Gradient = []
@@ -44,8 +41,6 @@ def sobel(image: Image) -> Image:
     gx, gy = sobel_gradients(luma(image))
     return Image([_to_bytes(_magnitude(gx, gy))], image.alpha)
 
-
-# --- Canny --------------------------------------------------------------------
 
 # tan(22.5 deg) ~= 0.414, kept as an integer ratio so direction binning is exact.
 _TAN_NUM, _TAN_DEN = 414, 1000
@@ -100,7 +95,7 @@ def _hysteresis(nms: list[list[float]], low: float, high: float) -> Channel:
 
 
 def canny_stages(image: Image, sigma: float, low: float, high: float) -> dict[str, Channel]:
-    """Every intermediate stage of the Canny detector, for visualisation."""
+    """All four stages, for the explainer."""
     gray = luma(image)
     smoothed = gaussian_channel(gray, sigma) if sigma > 0 else gray
     gx, gy = sobel_gradients(smoothed)
@@ -118,16 +113,8 @@ def canny(image: Image, sigma: float, low: float, high: float) -> Image:
     return Image([canny_stages(image, sigma, low, high)["edges"]], image.alpha)
 
 
-# --- adaptive threshold -------------------------------------------------------
-
-
 def adaptive_threshold(image: Image, blur_radius: int, block_radius: int, offset: float) -> Image:
-    """Ink drawing: a pixel turns black when it is darker than its neighbourhood.
-
-    The local mean over a (2R+1)^2 block comes from a summed-area table, so the
-    cost per pixel is constant no matter how large the block is. Blocks are
-    clipped at the image border rather than padded.
-    """
+    """Black where a pixel is darker than its block's mean. Blocks are clipped at the border."""
     smoothed = box_blur_channel(luma(image), blur_radius)
     height, width = len(smoothed), len(smoothed[0])
     table = integral_image(smoothed)

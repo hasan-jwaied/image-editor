@@ -6,10 +6,6 @@ import { luma } from '../../engine/point'
 import { usePointerHint } from '../../hooks/usePointerHint'
 import { useI18n } from '../../i18n'
 
-/**
- * The summed-area-table lookup behind box blur and adaptive threshold, with
- * the real table values at the window corners under the pointer.
- */
 export function SatExplainer({
   input,
   hover,
@@ -32,7 +28,7 @@ export function SatExplainer({
     const g = luma(input)
     return mode === 'threshold' ? boxBlurChannel(g, w, h, blurRadius) : g
   }, [input, mode, blurRadius, w, h])
-  // Blur pads with clamped edges; threshold clips the window at the border.
+  // blur clamps at the edges, threshold clips the window
   const pad = mode === 'blur' ? radius : 0
   const table = useMemo(() => integralImage(plane, w, h, pad), [plane, w, h, pad])
   const stride = w + 2 * pad + 1

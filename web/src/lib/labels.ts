@@ -2,8 +2,7 @@ import type { MessageKey } from '../i18n/en'
 
 type T = (key: MessageKey, vars?: Record<string, string | number>) => string
 
-// Every operation, parameter and option in the spec has a string in each
-// language; tests/i18n.test.ts fails the build otherwise.
+// tests/i18n.test.ts checks that every key built here exists.
 export const opLabel = (t: T, op: string) => t(`op.${op}.label` as MessageKey)
 export const opExplain = (t: T, op: string) => t(`op.${op}.explain` as MessageKey)
 export const paramLabel = (t: T, op: string, name: string) => t(`param.${op}.${name}` as MessageKey)

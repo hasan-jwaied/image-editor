@@ -1,26 +1,18 @@
-/**
- * Numeric helpers. `roundHalfEven` reproduces Python's built-in `round`,
- * which rounds exact halves to the nearest even integer. Using it everywhere
- * the Python reference calls `round` is what lets the golden tests demand
- * bit-identical output.
- */
+// Python's round() sends halves to even (2.5 -> 2); JS rounds them up.
+// The engines only match pixel for pixel because every round() is this one.
 export function roundHalfEven(x: number): number {
   const r = Math.round(x) // rounds halves toward +Infinity
   return r - x === 0.5 && r % 2 !== 0 ? r - 1 : r
 }
 
-/** Index lookup for clamp-to-edge borders: `idx[i + pad]` = clamp(i, 0, n-1). */
+/** `idx[i + pad]` = clamp(i, 0, n - 1) */
 export function clampedIndex(n: number, pad: number): Int32Array {
   const idx = new Int32Array(n + 2 * pad)
   for (let i = 0; i < idx.length; i++) idx[i] = Math.min(n - 1, Math.max(0, i - pad))
   return idx
 }
 
-/**
- * Summed-area table of a plane with clamp-to-edge padding `pad`, plus a
- * leading row and column of zeros. Dimensions (h + 2p + 1) x (w + 2p + 1).
- * Float64 keeps sums exact well past 2^31 (large images, big radii).
- */
+/** Summed-area table of the plane padded by `pad`, (h + 2p + 1) × (w + 2p + 1). Float64 so sums can pass 2^31. */
 export function integralImage(plane: Uint8Array, width: number, height: number, pad = 0): Float64Array {
   const pw = width + 2 * pad
   const ph = height + 2 * pad

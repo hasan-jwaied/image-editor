@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { Frame } from '../components/Viewer'
 
-/** A canvas ref that always shows `frame` at its native resolution (CSS scales it). */
 export function useFrameCanvas(frame: Frame | null) {
   const ref = useRef<HTMLCanvasElement>(null)
   useLayoutEffect(() => {

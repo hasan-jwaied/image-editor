@@ -3,7 +3,7 @@ import type { Step } from '../engine/registry'
 import type { Params } from '../engine/spec'
 
 export interface StepResult {
-  /** Output of the step; for a disabled step this is its unchanged input. */
+  /** A disabled step passes its input through. */
   image: Img
   ms: number
 }

@@ -1,4 +1,4 @@
-/** Geometric transforms, mirroring python/src/pixel_lab/ops/geometry.py. */
+// Port of python/src/pixel_lab/ops/geometry.py.
 import { mapPlanes, type Img } from './image'
 import { roundHalfEven } from './math'
 
@@ -34,7 +34,6 @@ export function rotate(img: Img, direction: string): Img {
   })
 }
 
-/** Pixel-centre aligned sample positions; see Python's `_sample_positions`. */
 function samplePositions(src: number, dst: number) {
   const ratio = src / dst
   const lo = new Int32Array(dst)
@@ -52,7 +51,6 @@ function samplePositions(src: number, dst: number) {
   return { lo, hi, frac }
 }
 
-/** Upper bound on any result, so repeated upscaling can't exhaust memory. Same as Python. */
 export const MAX_PIXELS = 50_000_000
 
 export function resizeTo(img: Img, width: number, height: number): Img {

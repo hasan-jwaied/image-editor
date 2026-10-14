@@ -3,7 +3,6 @@ import type { Frame } from '../components/Viewer'
 
 const cache = new WeakMap<Img, Frame>()
 
-/** RGBA frame for display, memoised per image object. */
 export function frameOf(img: Img): Frame {
   let f = cache.get(img)
   if (!f) {

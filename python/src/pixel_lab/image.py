@@ -1,13 +1,4 @@
-"""The in-memory image model.
-
-An image is a set of *planes* (channels). Each plane is a list of rows and each
-row is a list of plain Python ints in 0..255. Keeping the channels planar
-rather than interleaved means almost every operation is written once for a
-single channel and mapped over the planes it applies to.
-
-Color operations touch only ``color`` planes; geometric operations also carry
-``alpha`` along so transparency survives rotations, flips and seam carving.
-"""
+"""Images as planes: lists of rows of ints in 0..255, with alpha kept separately."""
 
 from __future__ import annotations
 
@@ -15,7 +6,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 Channel = list[list[int]]
-"""A single plane: ``height`` rows of ``width`` ints in 0..255."""
 
 ChannelFn = Callable[[Channel], Channel]
 

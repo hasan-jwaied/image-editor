@@ -1,4 +1,4 @@
-/** Edge detection, mirroring python/src/pixel_lab/ops/edges.py. */
+// Port of python/src/pixel_lab/ops/edges.py.
 import { makeImg, type Img } from './image'
 import { clampedIndex, integralImage, roundHalfEven } from './math'
 import { boxBlurChannel, gaussianChannel } from './filters'

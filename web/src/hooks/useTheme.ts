@@ -3,11 +3,7 @@ import { flushSync } from 'react-dom'
 
 type Theme = 'light' | 'dark'
 
-/**
- * The same storage key and class the portfolio uses (next-themes, attribute
- * "class", default light, no system mode), so a theme chosen on the portfolio
- * carries over to the lab and back.
- */
+// Same key and class as the portfolio's next-themes, so the choice carries over.
 const THEME_KEY = 'theme'
 
 function stored(): Theme {
@@ -31,7 +27,6 @@ export function useTheme() {
 
   useEffect(() => apply(theme), [theme])
 
-  // Another tab (or the portfolio) changed the theme.
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === THEME_KEY) setTheme(e.newValue === 'dark' ? 'dark' : 'light')
@@ -51,7 +46,6 @@ export function useTheme() {
       apply(next)
       setTheme(next)
     }
-    // Cross-fade the whole page as one snapshot, like the portfolio's toggle.
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce || !('startViewTransition' in document)) commit()
     else document.startViewTransition(() => flushSync(commit))

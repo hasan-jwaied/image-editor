@@ -1,21 +1,15 @@
-/* ==========================================================================
-   Pixel Lab: Apple-style design system, matched to the portfolio
-   (my_site/app/globals.css): the same neutral scale, accent, glass recipe,
-   ambient backdrop and nav bar. Light is the default; `html.dark` is set by
-   the same "theme" key the portfolio's next-themes uses.
-   ========================================================================== */
+/* Tokens match the portfolio (my_site/app/globals.css). */
 :root {
   color-scheme: light;
-  /* Neutrals: identical to the portfolio's redefined slate scale. */
-  --canvas: #f5f5f7; /* slate-50 */
-  --label: #1c1c1e; /* slate-900 */
-  --label-body: #3a3a3c; /* slate-700 */
-  --label-2: #6e6e73; /* slate-500: secondary text, never lighter */
-  --label-3: #86868b; /* slate-400: decoration only */
+  --canvas: #f5f5f7;
+  --label: #1c1c1e;
+  --label-body: #3a3a3c;
+  --label-2: #6e6e73;
+  --label-3: #86868b; /* decoration only */
   --placeholder: #5f5f64; /* secondary text on a gray fill still needs 4.5:1 */
-  --nav-link: #515154; /* slate-600, as in the portfolio's nav */
+  --nav-link: #515154;
   --surface: #ffffff;
-  --fill: rgb(118 118 128 / 0.12); /* iOS tertiary fill: search, segmented track */
+  --fill: rgb(118 118 128 / 0.12);
   --fill-hover: rgb(118 118 128 / 0.2);
   --hover: rgb(0 0 0 / 0.05);
   --separator: rgb(0 0 0 / 0.1);
@@ -23,8 +17,8 @@
   --row: rgb(255 255 255 / 0.72);
   --thumb: #ffffff;
 
-  --accent: #0071e3; /* blue-600 */
-  --accent-hover: #0062c4; /* blue-700 */
+  --accent: #0071e3;
+  --accent-hover: #0062c4;
   --accent-text: #0062c4;
   --accent-soft: rgb(0 113 227 / 0.1);
   --on-accent: #ffffff;
@@ -33,7 +27,7 @@
   --checker-a: #ececf0;
   --checker-b: #e2e2e7;
 
-  /* Charts: validated palette (all-pairs CVD-safe for three series). */
+  /* colour-blind safe for three series */
   --chart-surface: #fbfbfd;
   --grid: rgb(0 0 0 / 0.08);
   --axis: rgb(0 0 0 / 0.2);
@@ -41,8 +35,8 @@
   --series-2: #f56300;
   --series-3: #1baf7a;
 
-  --radius-xl: 24px; /* rounded-3xl: panels */
-  --radius-lg: 16px; /* rounded-2xl: cards */
+  --radius-xl: 24px;
+  --radius-lg: 16px;
   --radius-md: 12px;
   --font:
     'Geist Variable', 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Noto Sans Hebrew',
@@ -54,16 +48,15 @@
 
 :root.dark {
   color-scheme: dark;
-  --canvas: #000000; /* slate-950 */
-  --label: #f5f5f7; /* slate-50 */
+  --canvas: #000000;
+  --label: #f5f5f7;
   --label-body: #d2d2d7;
-  /* Apple's dark secondaryLabel. The portfolio's #86868b passes on its black
-     canvas but not on the lighter glass panels used here. */
+  /* lighter than the portfolio's #86868b, which fails contrast on glass */
   --label-2: #98989d;
   --label-3: #6e6e73;
   --placeholder: #a1a1a6;
   --nav-link: #98989d;
-  --surface: #1c1c1e; /* slate-900 */
+  --surface: #1c1c1e;
   --fill: rgb(118 118 128 / 0.24);
   --fill-hover: rgb(118 118 128 / 0.34);
   --hover: rgb(255 255 255 / 0.1);
@@ -72,7 +65,7 @@
   --row: rgb(255 255 255 / 0.05);
   --thumb: #636366;
 
-  --accent-text: #2997ff; /* blue-400 */
+  --accent-text: #2997ff;
   --accent-soft: rgb(41 151 255 / 0.18);
   --focus: #2997ff;
   --danger: #ff6961;
@@ -88,16 +81,14 @@
   --shadow-pop: 0 0 0 1px rgb(255 255 255 / 0.08), 0 12px 32px rgb(0 0 0 / 0.5);
 }
 
-/* Theme switch cross-fades as one snapshot (see useTheme), like the portfolio. */
+/* Theme switch cross-fade (see useTheme). */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 350ms;
   animation-timing-function: ease-in-out;
 }
 
-/* ==========================================================================
-   Base
-   ========================================================================== */
+/* Base */
 *,
 *::before,
 *::after {
@@ -233,7 +224,6 @@ svg {
   color: var(--danger);
 }
 
-/* Invisible (but focusable) until a keyboard user tabs to it. */
 .skip-link {
   position: absolute;
   inset-inline-start: 12px;
@@ -257,10 +247,7 @@ svg {
   white-space: nowrap;
 }
 
-/* ==========================================================================
-   Glass & ambient backdrop: the portfolio's exact recipe. Glass only on
-   floating layers over .ambient; never nested.
-   ========================================================================== */
+/* Glass & ambient backdrop */
 .ambient {
   position: fixed;
   inset: 0;
@@ -354,9 +341,7 @@ svg {
   }
 }
 
-/* ==========================================================================
-   Controls
-   ========================================================================== */
+/* Controls */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -494,7 +479,6 @@ option {
   color: var(--label);
 }
 
-/* iOS segmented control: a filled track with a raised thumb. */
 .segmented {
   display: inline-flex;
   padding: 2px;
@@ -556,9 +540,7 @@ option {
   }
 }
 
-/* ==========================================================================
-   Navigation bar
-   ========================================================================== */
+/* Navigation bar */
 .topbar {
   position: sticky;
   top: 0;
@@ -570,7 +552,7 @@ option {
   align-items: center;
   gap: 8px;
   height: var(--nav-h);
-  max-width: 1024px; /* the portfolio's max-w-5xl, so the bar doesn't jump between pages */
+  max-width: 1024px; /* same as the portfolio, so the bar doesn't jump */
   margin: 0 auto;
 }
 
@@ -681,9 +663,7 @@ option {
   }
 }
 
-/* ==========================================================================
-   Hero
-   ========================================================================== */
+/* Hero */
 .hero {
   max-width: 1024px;
   margin: 0 auto;
@@ -746,9 +726,7 @@ option {
   background: rgb(255 255 255 / 0.12);
 }
 
-/* ==========================================================================
-   Lab layout: three floating glass panels
-   ========================================================================== */
+/* Lab layout */
 .lab {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -781,8 +759,7 @@ option {
   flex-direction: column;
 }
 
-/* Two columns from 900px (iPad landscape, small laptops); phones and iPad
-   portrait get one column, where the viewer can use the full width. */
+/* Two columns from 900px, one below. */
 @media (min-width: 900px) and (max-width: 1099px) {
   .lab {
     grid-template-columns: minmax(0, 1fr) 344px;
@@ -810,15 +787,12 @@ option {
   }
   .library-panel,
   .inspector {
-    /* Scrolls its own list first, then hands the gesture on to the page. */
     overflow-y: auto;
     scrollbar-width: thin;
   }
 }
 
-/* ==========================================================================
-   Library (sidebar)
-   ========================================================================== */
+/* Library */
 .library {
   padding: 0 10px 14px;
 }
@@ -869,7 +843,7 @@ option {
   font-weight: 500;
   color: var(--label-2);
   text-transform: uppercase;
-  letter-spacing: 0.08em; /* like the portfolio's card labels ("LANGUAGES") */
+  letter-spacing: 0.08em;
 }
 
 :lang(he) .library-group h3 {
@@ -889,7 +863,6 @@ option {
   color: var(--label-2);
 }
 
-/* A row: the name applies the operation alone, "+" stacks it. */
 .op-row {
   display: flex;
   align-items: center;
@@ -958,9 +931,7 @@ option {
   color: var(--accent-text);
 }
 
-/* ==========================================================================
-   Viewer
-   ========================================================================== */
+/* Viewer */
 .viewer {
   display: flex;
   flex-direction: column;
@@ -1267,9 +1238,7 @@ option {
   font-size: 13px;
 }
 
-/* ==========================================================================
-   Inspector: tabs (phones), pipeline list, parameters
-   ========================================================================== */
+/* Inspector */
 .tabs {
   display: flex;
   margin: 12px;
@@ -1316,7 +1285,6 @@ option {
   font-size: 14px;
 }
 
-/* iOS inset grouped list. */
 .steps {
   margin: 8px 0 0;
   padding: 0;
@@ -1531,7 +1499,6 @@ option {
   min-height: 36px;
 }
 
-/* iOS-style slider: blue fill, white knob with a soft shadow. */
 input[type='range'] {
   --fill: 50%;
   width: 100%;
@@ -1587,9 +1554,7 @@ input[type='range']::-moz-range-thumb {
     0 6px 13px rgb(0 0 0 / 0.12);
 }
 
-/* ==========================================================================
-   Explain panel
-   ========================================================================== */
+/* Explain panel */
 .explain {
   padding: 4px 16px 24px;
   display: grid;
@@ -1886,9 +1851,7 @@ input[type='range']::-moz-range-thumb {
   font-weight: 600;
 }
 
-/* ==========================================================================
-   Charts (validated palette; text in label colours, never series colours)
-   ========================================================================== */
+/* Charts */
 .chart {
   margin: 0;
   min-width: 0;
@@ -2039,9 +2002,7 @@ input[type='range']::-moz-range-thumb {
   text-align: end;
 }
 
-/* ==========================================================================
-   Case study ("How it's built"), laid out like the portfolio's project pages
-   ========================================================================== */
+/* Case study */
 .article {
   max-width: 1024px;
   margin: 80px auto 0;
@@ -2272,7 +2233,6 @@ input[type='range']::-moz-range-thumb {
   font-weight: 500;
 }
 
-/* Feature list with filled check badges, as on the portfolio's project pages. */
 .checks {
   display: grid;
   gap: 12px;
@@ -2362,11 +2322,9 @@ input[type='range']::-moz-range-thumb {
   color: var(--label);
 }
 
-/* ==========================================================================
-   Devices: notches, small screens, touch
-   ========================================================================== */
+/* Devices */
 
-/* Keep content clear of the notch and rounded corners (viewport-fit=cover). */
+/* viewport-fit=cover: keep clear of the notch */
 .nav-inner,
 .hero,
 .lab,
@@ -2394,7 +2352,6 @@ input[type='range']::-moz-range-thumb {
   .lab {
     --gutter: 10px;
   }
-  /* One column: size the viewer from its width so the image fills it. */
   .stage,
   .viewer {
     height: auto;
@@ -2448,7 +2405,6 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* The architecture diagram reads top to bottom on phones. */
 @media (max-width: 600px) {
   .flow-lane {
     flex-direction: column;
@@ -2480,7 +2436,7 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* iPhone SE / older small phones. */
+/* iPhone SE and other small phones */
 @media (max-width: 400px) {
   .nav-inner,
   .hero,
@@ -2516,7 +2472,7 @@ input[type='range']::-moz-range-thumb {
   }
   .actual-btn,
   .step-meta {
-    display: none; /* the total above the list still shows the timing */
+    display: none;
   }
   .tabs button {
     font-size: 13px;
@@ -2524,10 +2480,10 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* Narrow inspector: reorder arrows only on the selected step, names may wrap. */
+/* Narrow inspector */
 @media (max-width: 480px) {
   .probe.idle {
-    display: none; /* image size; tapping a pixel still shows its values */
+    display: none;
   }
   .step:not(.selected) .step-move {
     display: none;
@@ -2541,7 +2497,7 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* Phones held sideways: the lab should fit without the hero pushing it away. */
+/* Phones held sideways */
 @media (max-height: 500px) and (orientation: landscape) {
   .hero {
     padding-top: 24px;
@@ -2554,8 +2510,7 @@ input[type='range']::-moz-range-thumb {
   }
 }
 
-/* Touch screens: 16px text in fields (iOS Safari zooms into anything
-   smaller), larger tap targets, and no hover-only affordances. */
+/* Touch: iOS Safari zooms into fields under 16px. */
 @media (pointer: coarse) {
   input,
   select {

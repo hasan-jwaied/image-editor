@@ -16,11 +16,6 @@ function fmtWeight(w: number, num: (n: number, d?: number) => string) {
   return num(w, 3)
 }
 
-/**
- * Shows the real neighbourhood under the pointer, the (flipped) weights and
- * the weighted sum, for any small kernel. Several kernels (Sobel's Gx and Gy)
- * are shown side by side.
- */
 export function KernelInspector({
   input,
   hover,
@@ -30,7 +25,7 @@ export function KernelInspector({
   input: Img
   hover: { x: number; y: number } | null
   kernels: { name?: string; kernel: Kernel }[]
-  /** Turns the per-kernel sums into the output value (default: clamp(round(sum))). */
+  /** Default: clamp(round(sum)). */
   combine?: (sums: number[]) => { label: string; value: number }
 }) {
   const { t, num } = useI18n()

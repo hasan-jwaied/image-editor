@@ -1,4 +1,4 @@
-"""Recipes in spec/recipes are the contract between the web app's export and the CLI."""
+"""The recipes in spec/recipes run in both engines."""
 
 from __future__ import annotations
 

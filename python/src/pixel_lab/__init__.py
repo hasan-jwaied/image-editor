@@ -1,4 +1,4 @@
-"""Pixel Lab: image processing from first principles, in pure Python.
+"""Image processing in pure Python.
 
 >>> from pixel_lab import load_image, save_image, ops
 >>> img = load_image("photo.jpg")

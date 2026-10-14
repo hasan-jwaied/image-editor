@@ -7,7 +7,7 @@ import type { EngineClient } from '../../worker/client'
 import type { Frame, Overlay } from '../Viewer'
 import { Play } from '../Icons'
 
-const SEAM_RGB = [227, 73, 72] // red: stands out against any photo
+const SEAM_RGB = [227, 73, 72]
 
 function paintSeams(base: Frame, seams: Int32Array[], count: number): Frame {
   const rgba = new Uint8ClampedArray(base.rgba)

@@ -4,7 +4,6 @@ import { useI18n } from '../../i18n'
 const SIZE = 200
 const M = 26
 
-/** A point operation's look-up table drawn as a tone curve, identity as reference. */
 export function Curve({ lut }: { lut: ArrayLike<number> }) {
   const { t } = useI18n()
   const [active, setActive] = useState<number | null>(null)

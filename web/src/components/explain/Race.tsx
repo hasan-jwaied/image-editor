@@ -8,7 +8,6 @@ import type { RaceResult } from '../../worker/protocol'
 import { LineChart } from '../charts/LineChart'
 import { Play } from '../Icons'
 
-/** Times three blur algorithms on this step's input; a result is shown only for the image it measured. */
 export function Race({ client, stepIndex, input }: { client: EngineClient; stepIndex: number; input: Img }) {
   const { t, num } = useI18n()
   const [measured, setMeasured] = useState<{ input: Img; result: RaceResult } | null>(null)

@@ -1,4 +1,4 @@
-/** English strings: the source of truth. Hebrew must provide every key (enforced by the type). */
+// he.ts must have every key; the type enforces it.
 export const en = {
   'app.name': 'Pixel Lab',
   'app.tagline': 'Image processing from first principles',

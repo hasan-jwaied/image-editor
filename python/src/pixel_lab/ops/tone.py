@@ -1,5 +1,3 @@
-"""Histogram-based tone mapping."""
-
 from __future__ import annotations
 
 from ..image import Channel, Image
@@ -14,11 +12,7 @@ def histogram(channel: Channel) -> list[int]:
 
 
 def equalization_lut(counts: list[int]) -> list[int]:
-    """Map each level through the normalised cumulative histogram (CDF).
-
-    Levels that were crowded together get spread apart, so the output uses the
-    full 0..255 range roughly evenly.
-    """
+    """Map each level through the normalised cumulative histogram."""
     total = sum(counts)
     cdf, running = [], 0
     for c in counts:
@@ -31,11 +25,7 @@ def equalization_lut(counts: list[int]) -> list[int]:
 
 
 def equalize(image: Image) -> Image:
-    """Equalise brightness only, so colors don't shift.
-
-    RGB is converted to YCbCr (JPEG full-range), the luma channel is
-    equalised, and the result is converted back.
-    """
+    """Equalise luma only (full-range YCbCr), so colors don't shift."""
     if image.is_gray:
         lut = equalization_lut(histogram(image.color[0]))
         return Image([[[lut[v] for v in row] for row in image.color[0]]], image.alpha)

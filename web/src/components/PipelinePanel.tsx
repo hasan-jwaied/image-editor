@@ -6,7 +6,6 @@ import type { Action, PipelineState } from '../state/pipeline'
 import { cliCommand, encodeRecipeHash, toRecipe, type Recipe } from '../state/recipe'
 import { Down, Download, Eye, EyeOff, Link, Redo, Terminal, Trash, Undo, Up } from './Icons'
 
-/** This page's address with the pipeline in the hash; opening it applies the pipeline once. */
 const shareUrl = (recipe: Recipe) =>
   `${window.location.origin}${window.location.pathname}${window.location.search}${encodeRecipeHash(recipe)}`
 

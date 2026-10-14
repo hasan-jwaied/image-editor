@@ -1,4 +1,4 @@
-/** Point operations, mirroring python/src/pixel_lab/ops/point.py. */
+// Port of python/src/pixel_lab/ops/point.py.
 import { isGray, makeImg, mapColor, type Img } from './image'
 import { roundHalfEven } from './math'
 

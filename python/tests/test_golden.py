@@ -1,8 +1,4 @@
-"""Regression check against the committed golden outputs.
-
-The same file is replayed by the TypeScript engine's tests, so a change here
-that is not regenerated would also show up there.
-"""
+"""Python side of the golden check; web/tests/golden.test.ts replays the same file."""
 
 from __future__ import annotations
 

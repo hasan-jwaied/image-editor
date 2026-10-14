@@ -5,7 +5,6 @@ import { useWidth } from './useWidth'
 
 const M = { top: 6, right: 8, bottom: 20, left: 8 }
 
-/** 256-bin histogram as a washed area with a 2px top line; hover for exact counts. */
 export function Histogram({
   title,
   counts,

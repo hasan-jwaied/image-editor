@@ -1,13 +1,7 @@
-/**
- * Promise wrapper around the engine worker.
- *
- * Pipeline runs are "latest wins": while one run is in flight, newer requests
- * replace each other in a single pending slot. If a run blocks a newer request
- * for too long (a slider dragged during a slow seam carve), the worker is
- * terminated and restarted rather than making the user wait.
- */
+// Latest request wins. If a slow run (seam carving) holds up a newer one for
+// too long, the worker is restarted instead of making the user wait.
 import type { Img } from '../engine/image'
-// `?worker` lets Vite build a classic worker in production (Safari 14 has no module workers).
+// Classic worker: Safari 14 has no module workers.
 import EngineWorker from './engine.worker.ts?worker'
 import type { Step } from '../engine/registry'
 import type { Request, ResponseFor, WorkerMessage } from './protocol'

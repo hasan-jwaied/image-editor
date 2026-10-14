@@ -4,15 +4,12 @@ import type { StepState } from '../state/pipeline'
 import { Superseded, type EngineClient } from '../worker/client'
 
 export interface Processed {
-  /** Output per step (mirrors the worker cache). May lag behind `steps` while busy. */
+  /** May lag behind `steps` while busy. */
   images: Img[]
   ms: number[]
-  /** Cumulative key per computed step, to tell which outputs are current. */
   keys: string[]
-  /** Cumulative keys for the current `steps`. */
   currentKeys: string[]
   runningIndex: number | null
-  /** 0..1 for operations that report progress (seam carving). */
   fraction: number | null
   busy: boolean
   error: string | null
@@ -37,7 +34,6 @@ export function useProcessor(client: EngineClient, source: Img | null, steps: St
   const stepsRef = useRef(steps)
   stepsRef.current = steps
   const currentKeys = cumulativeKeys(steps)
-  // Changes whenever any step's op, params or enabled flag changes (or a step is added/removed).
   const signature = currentKeys[currentKeys.length - 1] ?? ''
 
   useEffect(() => {

@@ -15,11 +15,11 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-// Offline support in production builds only (a dev-server SW would cache stale modules).
+// Production only: in dev a service worker would cache stale modules.
 if (import.meta.env.PROD && PWA && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {
-      /* offline support is a progressive enhancement */
+      /* the app works without it */
     })
   })
 }

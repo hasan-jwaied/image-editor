@@ -1,9 +1,6 @@
-"""Recipes: an ordered list of operations, shared by the CLI and the web app.
+"""Recipes: ordered steps as JSON, used by web share links and ``pixel-lab run --recipe``.
 
-The web app uses the same JSON in its share links, and the CLI replays it from a
-file (``pixel-lab run --recipe``) or saves it from ``pixel-lab edit``::
-
-    {"version": 1, "steps": [{"op": "gaussian_blur", "params": {"sigma": 2}}]}
+{"version": 1, "steps": [{"op": "gaussian_blur", "params": {"sigma": 2}}]}
 """
 
 from __future__ import annotations
@@ -28,7 +25,7 @@ class Step:
     enabled: bool = True
 
     def validate(self) -> Step:
-        """Return a copy with every parameter resolved and checked."""
+        """A copy with every parameter resolved and checked."""
         return Step(self.op, registry.get(self.op).resolve(self.params), self.enabled)
 
     def to_json(self) -> dict[str, Any]:
@@ -51,11 +48,7 @@ def _format(value: Any) -> str:
 
 
 def parse_step(text: str) -> Step:
-    """Parse the CLI shorthand ``op`` or ``op:key=value,key=value``.
-
-    A kernel value may itself contain commas: ``convolve:preset=custom,weights=0,-1,0,...``
-    (bare numbers after ``weights=`` are appended to it).
-    """
+    """Parse ``op`` or ``op:key=value,...``; kernel weights keep their commas."""
     op, _, rest = text.strip().partition(":")
     params: dict[str, Any] = {}
     last_key: str | None = None
@@ -71,8 +64,7 @@ def parse_step(text: str) -> Step:
     return Step(op.strip(), params).validate()
 
 
-MAX_STEPS = 32
-"""Same limit as the web app, which also applies it to shared links."""
+MAX_STEPS = 32  # same limit as the web app
 
 
 def _step_from_json(item: Any) -> Step:
@@ -114,7 +106,7 @@ def run(
     steps: list[Step],
     on_step: Callable[[Step, Image, float], None] | None = None,
 ) -> Image:
-    """Apply each enabled step in order; ``on_step`` receives the elapsed seconds."""
+    """``on_step`` gets each step's elapsed seconds."""
     for step in steps:
         if not step.enabled:
             continue

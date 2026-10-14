@@ -1,6 +1,4 @@
-// Offline support for the standalone build: network-first for the page (always
-// fresh when online), cache-first for everything else (Vite gives assets
-// content-hashed names). Only successful same-origin GET responses are stored.
+// Network-first for the page, cache-first for hashed assets. Same-origin GETs only.
 const CACHE = 'pixel-lab-v1'
 
 self.addEventListener('install', (event) => {
@@ -15,7 +13,6 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-/** Cache a successful response under `key` and pass it through unchanged. */
 function store(key, res) {
   if (res.ok) {
     const copy = res.clone()

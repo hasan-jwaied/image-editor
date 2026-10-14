@@ -1,15 +1,11 @@
-"""Neighbourhood filters: blurs, sharpening and general convolution.
+"""Blurs, sharpening and convolution.
 
-Three ways to blur, three complexity classes (N = pixel count):
+convolve_channel   O(N*k^2)
+gaussian_channel   O(N*k), two 1-D passes
+box_blur_channel   O(N), summed-area table
 
-* ``convolve_channel`` with a k x k kernel   O(N * k^2)  -- the textbook way
-* ``gaussian_channel`` (separable passes)    O(N * k)    -- 2-D kernel = two 1-D passes
-* ``box_blur_channel`` (summed-area table)   O(N)        -- independent of radius
-
-The inner loops add one kernel tap at a time across a whole row
-(``acc = [a + v * w ...]``). That keeps the arithmetic in exactly the order the
-per-pixel TypeScript loops use, so both engines agree bit for bit, and it is
-several times faster in CPython than indexing pixel by pixel.
+Loops add one kernel tap at a time across a row, the same order the
+TypeScript engine uses, so both give identical pixels.
 """
 
 from __future__ import annotations
@@ -34,15 +30,8 @@ def _round_row(acc: list[float]) -> list[int]:
     return [0 if v < 0 else 255 if v > 255 else v for v in map(round, acc)]
 
 
-# --- general convolution ------------------------------------------------------
-
-
 def convolve_channel(channel: Channel, kernel: Kernel) -> Channel:
-    """True 2-D convolution (the kernel is flipped) with clamp-to-edge borders.
-
-    For symmetric kernels flipping changes nothing; for asymmetric ones such as
-    emboss it is the difference between convolution and correlation.
-    """
+    """True convolution (kernel flipped) with clamp-to-edge borders."""
     size = len(kernel)
     if size % 2 == 0 or any(len(row) != size for row in kernel):
         raise ValueError("kernel must be square with an odd size")
@@ -77,17 +66,14 @@ def convolve(image: Image, preset: str, weights: list[float] | None = None) -> I
 
 
 def box_blur_naive(image: Image, radius: int) -> Image:
-    """Box blur as a plain convolution. Kept as the O(N * k^2) benchmark baseline."""
+    """O(N * k^2) baseline for the benchmark."""
     size = 2 * radius + 1
     kernel = [[1 / (size * size)] * size for _ in range(size)]
     return map_color(image, lambda plane: convolve_channel(plane, kernel))
 
 
-# --- box blur via summed-area table -------------------------------------------
-
-
 def box_blur_channel(channel: Channel, radius: int) -> Channel:
-    """Mean of the (2r+1)^2 window around each pixel in four lookups per pixel."""
+    """Summed-area table: four lookups per pixel at any radius."""
     if radius <= 0:
         return [row[:] for row in channel]
     size = 2 * radius + 1
@@ -108,9 +94,6 @@ def box_blur_channel(channel: Channel, radius: int) -> Channel:
 
 def box_blur(image: Image, radius: int) -> Image:
     return map_color(image, lambda plane: box_blur_channel(plane, radius))
-
-
-# --- separable Gaussian -------------------------------------------------------
 
 
 def gaussian_kernel(sigma: float) -> list[float]:
@@ -152,7 +135,7 @@ def gaussian_blur(image: Image, sigma: float) -> Image:
 
 
 def sharpen(image: Image, amount: float, sigma: float) -> Image:
-    """Unsharp mask: add back ``amount`` times the detail a blur removes."""
+    """Unsharp mask."""
 
     def channel(plane: Channel) -> Channel:
         blurred = gaussian_channel(plane, sigma)

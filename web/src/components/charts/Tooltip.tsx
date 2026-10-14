@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 
-/** Chart tooltip anchored at `x`; flips to the left side when it would overflow. */
 export function Tooltip({
   x,
   top = 0,

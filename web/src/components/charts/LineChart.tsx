@@ -6,11 +6,9 @@ import { useWidth } from './useWidth'
 export interface Series {
   id: string
   label: string
-  /** Shown after the label in the legend and table only (e.g. a complexity class). */
   note?: string
-  /** CSS color, normally a var(--series-n) token. */
   color: string
-  /** Missing points are null; values ≤ 0 can't sit on a log axis and are drawn at 0.1. */
+  /** null = missing; values ≤ 0 are drawn at 0.1 (log axis). */
   values: (number | null)[]
 }
 
@@ -22,13 +20,11 @@ interface Props {
   series: Series[]
   formatY: (v: number) => string
   height?: number
-  /** Share one y-domain across small multiples. */
   yDomain?: [number, number]
 }
 
 const M = { top: 10, right: 12, bottom: 34, left: 54 }
 
-/** Line chart with a log10 y-axis, crosshair tooltip, legend and table view. */
 export function LineChart({ title, x, xLabel, yLabel, series: input, formatY, height = 220, yDomain }: Props) {
   const series = input.map((s) => ({ ...s, values: s.values.map((v) => (v === null ? null : Math.max(v, 0.1))) }))
   const { t, num } = useI18n()
@@ -45,7 +41,7 @@ export function LineChart({ title, x, xLabel, yLabel, series: input, formatY, he
   const ticks: number[] = []
   for (let v = lo; v <= hi * 1.0001; v *= 10) ticks.push(v)
 
-  // Direct end labels need room on the inline end; drop them on narrow screens (legend remains).
+  // no room for end labels on narrow screens; the legend remains
   const endLabels = width >= 420
   const right = endLabels ? 132 : M.right
   const plotW = width - M.left - right
@@ -65,7 +61,7 @@ export function LineChart({ title, x, xLabel, yLabel, series: input, formatY, he
     return d
   })
 
-  // End labels at each series' last point, nudged apart only enough to avoid overlap.
+  // nudge end labels apart so they don't overlap
   const labels = series
     .map((s) => {
       const last = s.values.reduce<number>((acc, v, i) => (v !== null ? i : acc), -1)

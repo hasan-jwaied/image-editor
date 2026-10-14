@@ -1,30 +1,20 @@
-/**
- * Seam carving, mirroring python/src/pixel_lab/ops/seam.py, plus tracing of
- * the removed seams (in original-image coordinates) for visualisation.
- *
- * Same algorithm and tie-breaking as the Python reference, so the output is
- * bit-identical, but organised for speed:
- *  - planes keep their original row stride and shrink in place (copyWithin),
- *    so removing a seam allocates nothing;
- *  - after a removal only a 3-pixel band of the energy map around the seam can
- *    change, so energy is updated locally in O(height) instead of O(N);
- *  - the DP runs on Int32 (energies are small integers; sums stay exact).
- */
+// Port of python/src/pixel_lab/ops/seam.py with the same tie-breaking, so the
+// output is identical. Faster because planes shrink in place and, after each
+// removal, only the energy next to the seam is recomputed.
 import { makeImg, planesOf, type Img } from './image'
 import { roundHalfEven } from './math'
 import { luma } from './point'
 
-/** Optional progress hook (0..1) for long-running carves; set by the worker. */
+/** Set by the worker to report progress (0..1). */
 export const progress: { report: ((fraction: number) => void) | null } = { report: null }
 
-/** Dual-gradient energy |dI/dx| + |dI/dy| with clamped borders (full map). */
+/** |dI/dx| + |dI/dy|, clamped edges. */
 export function energyMap(gray: ArrayLike<number>, w: number, h: number): Int32Array {
   const e = new Int32Array(w * h)
   for (let y = 0; y < h; y++) energyRow(gray, e, w, w, h, y, 0, w - 1)
   return e
 }
 
-/** Recompute energy for row y, columns x0..x1, on buffers with row `stride`. */
 function energyRow(
   gray: ArrayLike<number>,
   e: Int32Array,
@@ -47,7 +37,7 @@ function energyRow(
   }
 }
 
-/** Minimum-energy vertical seam by dynamic programming; leftmost on ties. */
+/** Leftmost on ties, like Python. */
 export function findSeam(energy: ArrayLike<number>, w: number, h: number): Int32Array {
   return findSeamStrided(energy, w, w, h, new Int32Array(w * h), new Int32Array(h))
 }
@@ -100,7 +90,6 @@ function findSeamStrided(
 
 type Buffer = Uint8Array | Int32Array
 
-/** Remove `count` vertical seams from planes stored with row stride `stride`. */
 function carveColumns(
   buffers: Buffer[],
   gray: Uint8Array,
@@ -134,8 +123,7 @@ function carveColumns(
       if (s < w - 1) for (const b of all) b.copyWithin(row + s, row + s + 1, row + w)
     }
     w--
-    // Only pixels within one column of a seam pixel in this row or the rows
-    // above/below can see different neighbours now.
+    // only pixels next to the seam (this row or the rows above and below) changed
     for (let y = 0; y < h; y++) {
       let lo = seam[y]
       let hi = seam[y]
@@ -168,7 +156,7 @@ function transpose<T extends Buffer>(p: T, w: number, h: number): T {
 
 interface SeamTrace {
   image: Img
-  /** Every removed vertical seam, as original-image column per row. */
+  /** Original-image column per row, for each removed seam. */
   seams: Int32Array[]
 }
 

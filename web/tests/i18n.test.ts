@@ -3,7 +3,7 @@ import { SPEC } from '../src/engine/spec'
 import { en } from '../src/i18n/en'
 import { he } from '../src/i18n/he'
 
-/** Labels are looked up by computed keys, so their existence is checked here instead of by the type. */
+// Labels use computed keys, which the type checker can't verify.
 describe('every spec entry has a string in each language', () => {
   const keys = [
     ...SPEC.categories.map((c) => `category.${c.id}`),

@@ -1,4 +1,4 @@
-/** Histogram equalisation, mirroring python/src/pixel_lab/ops/tone.py. */
+// Port of python/src/pixel_lab/ops/tone.py.
 import { isGray, makeImg, type Img } from './image'
 import { roundHalfEven } from './math'
 

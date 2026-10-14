@@ -1,5 +1,3 @@
-"""Hand-computed expectations for individual algorithms."""
-
 from __future__ import annotations
 
 import math

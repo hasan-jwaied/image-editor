@@ -1,8 +1,5 @@
 /// <reference lib="webworker" />
-/**
- * Runs the engine off the main thread. Keeps the source image and a cache of
- * every step's output, so editing step k only recomputes steps k..n.
- */
+// Caches each step's output, so editing step k only reruns steps k..n.
 import { cannyStages } from '../engine/edges'
 import { boxBlurChannel, boxBlurNaiveChannel, gaussianChannel } from '../engine/filters'
 import { resizeTo } from '../engine/geometry'
@@ -71,7 +68,6 @@ function time(fn: () => unknown): number {
   return Math.round((performance.now() - t) * 10) / 10
 }
 
-/** Time three blur algorithms on (a 512px copy of) the step input. */
 function race(stepIndex: number) {
   let img = inputOf(stepIndex)
   const longest = Math.max(img.width, img.height)
@@ -83,7 +79,7 @@ function race(stepIndex: number) {
   const { width: w, height: h } = img
   const radii = [1, 2, 4, 7, 12, 20]
   const ms = { naive: [] as (number | null)[], separable: [] as number[], sat: [] as number[] }
-  boxBlurChannel(p, w, h, 2) // warm up the JIT so the first point isn't an outlier
+  boxBlurChannel(p, w, h, 2) // warm-up
   for (const r of radii) {
     ms.naive.push(r <= 12 ? time(() => boxBlurNaiveChannel(p, w, h, r)) : null)
     ms.separable.push(time(() => gaussianChannel(p, w, h, r / 3)))
