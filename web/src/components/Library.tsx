@@ -3,18 +3,18 @@ import { SPEC } from '../engine/spec'
 import { useI18n } from '../i18n'
 import type { MessageKey } from '../i18n/en'
 import { opExplain, opLabel } from '../lib/labels'
-import { Plus, Search } from './Icons'
+import { Check, Plus, Search } from './Icons'
 
 interface Props {
-  /** Ops currently in the pipeline (highlighted). */
+  /** Operations currently in the pipeline. */
   active: ReadonlySet<string>
-  /** Show this operation on its own: the pipeline becomes just this step. */
-  onApply: (op: string) => void
-  /** Stack this operation on top of the current pipeline. */
+  /** Applied: remove it. Otherwise: show it on its own (the pipeline becomes just this step). */
+  onToggle: (op: string) => void
+  /** Stack an operation that isn't applied yet on top of the pipeline. */
   onAdd: (op: string) => void
 }
 
-export function Library({ active, onApply, onAdd }: Props) {
+export function Library({ active, onToggle, onAdd }: Props) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
 
@@ -43,7 +43,7 @@ export function Library({ active, onApply, onAdd }: Props) {
           placeholder={t('library.search')}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && groups.length === 1 && groups[0].ops.length === 1) onApply(groups[0].ops[0].id)
+            if (e.key === 'Enter' && groups.length === 1 && groups[0].ops.length === 1) onToggle(groups[0].ops[0].id)
           }}
         />
       </label>
@@ -61,8 +61,8 @@ export function Library({ active, onApply, onAdd }: Props) {
                   <button
                     type="button"
                     className="op-btn"
-                    onClick={() => onApply(op.id)}
-                    aria-label={t(on ? 'library.applied' : 'library.apply', { name: label })}
+                    onClick={() => onToggle(op.id)}
+                    aria-label={t(on ? 'library.remove' : 'library.apply', { name: label })}
                     title={opExplain(t, op.id)}
                   >
                     <span className="op-name">{label}</span>
@@ -70,15 +70,21 @@ export function Library({ active, onApply, onAdd }: Props) {
                       {op.complexity}
                     </span>
                   </button>
-                  <button
-                    type="button"
-                    className="icon-btn sm op-add"
-                    onClick={() => onAdd(op.id)}
-                    aria-label={t('library.add', { name: label })}
-                    title={t('library.add', { name: label })}
-                  >
-                    <Plus />
-                  </button>
+                  {on ? (
+                    <span className="op-check" aria-hidden="true">
+                      <Check />
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="icon-btn sm op-add"
+                      onClick={() => onAdd(op.id)}
+                      aria-label={t('library.add', { name: label })}
+                      title={t('library.add', { name: label })}
+                    >
+                      <Plus />
+                    </button>
+                  )}
                 </li>
               )
             })}

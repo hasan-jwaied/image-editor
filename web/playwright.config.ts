@@ -9,7 +9,8 @@ export default defineConfig({
   use: { baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:4173/', trace: 'retain-on-failure' },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // The feature walkthrough and the device matrix set their own viewports, so they run once.
+    { name: 'mobile', use: { ...devices['Pixel 7'] }, testIgnore: ['**/features.spec.ts', '**/devices.spec.ts'] },
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined

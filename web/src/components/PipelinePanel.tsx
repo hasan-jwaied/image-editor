@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import type { Processed } from '../hooks/useProcessor'
 import { useI18n } from '../i18n'
-import { downloadBlob } from '../lib/download'
 import { formatMs, opLabel } from '../lib/labels'
 import type { Action, PipelineState } from '../state/pipeline'
 import { cliCommand, encodeRecipeHash, toRecipe, type Recipe } from '../state/recipe'
-import { Down, Download, Eye, EyeOff, FileCode, Link, Redo, Terminal, Trash, Undo, Up } from './Icons'
+import { Down, Download, Eye, EyeOff, Link, Redo, Terminal, Trash, Undo, Up } from './Icons'
 
 /** This page's address with the pipeline in the hash; opening it applies the pipeline once. */
 const shareUrl = (recipe: Recipe) =>
@@ -43,12 +42,6 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
       window.prompt(t('pipeline.copy'), text)
     }
   }
-
-  const downloadRecipe = () =>
-    downloadBlob(
-      new Blob([JSON.stringify(recipe, null, 2) + '\n'], { type: 'application/json' }),
-      'pixel-lab-recipe.json',
-    )
 
   return (
     <div className="pipeline">
@@ -180,9 +173,6 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
         </button>
         <button type="button" className="btn" onClick={() => copy(shareUrl(recipe), 'link')} disabled={!steps.length}>
           <Link /> {copied === 'link' ? t('pipeline.shared') : t('pipeline.share')}
-        </button>
-        <button type="button" className="btn" onClick={downloadRecipe} disabled={!steps.length}>
-          <FileCode /> {t('pipeline.recipe')}
         </button>
       </div>
 

@@ -945,6 +945,14 @@ option {
   color: var(--label-body);
 }
 
+.op-check {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent-text);
+}
+
 .op-row .op-add:hover:not(:disabled) {
   background: var(--accent-soft);
   color: var(--accent-text);
@@ -2557,7 +2565,8 @@ input[type='range']::-moz-range-thumb {
     width: 44px;
     height: 44px;
   }
-  .icon-btn.sm {
+  .icon-btn.sm,
+  .op-check {
     width: 38px;
     height: 38px;
   }

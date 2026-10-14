@@ -110,7 +110,9 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="OP[:K=V,...]",
         help="operation to apply; repeatable, runs in order",
     )
-    p_run.add_argument("-r", "--recipe", help="recipe JSON exported from the web app")
+    p_run.add_argument(
+        "-r", "--recipe", help="recipe JSON, e.g. saved by 'pixel-lab edit' (see spec/recipes)"
+    )
     p_run.add_argument(
         "--max-size",
         type=int,

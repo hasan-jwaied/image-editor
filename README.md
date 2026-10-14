@@ -102,7 +102,7 @@ pip install -e '.[dev]'
 
 pixel-lab list                                              # every operation and its parameters
 pixel-lab run photo.jpg -o sketch.png -s grayscale -s canny:sigma=2
-pixel-lab run photo.jpg -o out.png --recipe pixel-lab-recipe.json   # exported from the web app
+pixel-lab run photo.jpg -o out.png --recipe recipe.json   # saved from 'pixel-lab edit'
 pixel-lab edit photo.jpg                                    # interactive session: undo, redo, history
 ```
 
