@@ -100,9 +100,6 @@ export function SeamExplainer({
         {trace ? `${t('explain.seamCount', { n: num(trace.seams.length, 0) })} · ` : `${t('explain.loading')} `}
         {t('explain.seamNote')}
       </p>
-      <pre className="formula" dir="ltr">
-        M[y][x] = e[y][x] + min(M[y−1][x−1], M[y−1][x], M[y−1][x+1])
-      </pre>
     </section>
   )
 }

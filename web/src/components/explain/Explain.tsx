@@ -100,14 +100,7 @@ function Detail({ step, stepIndex, input, output, hover, client, overlay, setOve
         </>
       )
     case 'sharpen':
-      return (
-        <>
-          <WeightsChart title={t('explain.gaussWeights')} weights={gaussianKernel(num('sigma'))} />
-          <pre className="formula" dir="ltr">
-            out = p + amount × (p − blur(p))
-          </pre>
-        </>
-      )
+      return <WeightsChart title={t('explain.gaussWeights')} weights={gaussianKernel(num('sigma'))} />
     case 'convolve':
       return <ConvolveDetail input={input} hover={hover} preset={p.preset as string} weights={p.weights as number[]} setParam={setParam} />
     case 'sobel':

@@ -64,6 +64,9 @@ export function Viewer(props: Props) {
   const [dragOver, setDragOver] = useState(false)
   const [probe, setProbe] = useState<{ x: number; y: number } | null>(null)
   const dragRef = useRef<{ kind: 'pan' | 'split'; x: number; y: number; px: number; py: number } | null>(null)
+  // Touch: every finger on the image, and the start of a two-finger pinch.
+  const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const pinchRef = useRef<{ dist: number; scale: number } | null>(null)
 
   const shown: Frame | null = holding && original ? original : (overlay?.frame ?? after)
   const splitAvailable = !!before && !!after && before.width === after.width && before.height === after.height
@@ -80,7 +83,8 @@ export function Viewer(props: Props) {
     return () => ro.disconnect()
   }, [])
 
-  const fit = shown ? Math.min((box.w - 32) / shown.width, (box.h - 32) / shown.height, 4) : 1
+  const inset = box.w < 500 ? 12 : 32 // breathing room around the image; less on phones
+  const fit = shown ? Math.min((box.w - inset) / shown.width, (box.h - inset) / shown.height, 4) : 1
   const scale = Math.max(MIN_ZOOM, zoom ?? fit)
   const dispW = shown ? shown.width * scale : 0
   const dispH = shown ? shown.height * scale : 0
@@ -134,9 +138,29 @@ export function Viewer(props: Props) {
     return { x: Math.floor((clientX - rect.left - left) / scale), y: Math.floor((clientY - rect.top - top) / scale) }
   }
 
+  const inspect = (clientX: number, clientY: number) => {
+    if (!shown) return
+    const p = toImage(clientX, clientY)
+    const inside = p.x >= 0 && p.y >= 0 && p.x < shown.width && p.y < shown.height
+    setProbe(inside ? p : null)
+    props.onHover(inside ? p : null)
+  }
+
   const onPointerDown = (e: RPointerEvent<HTMLDivElement>) => {
     if (!shown || e.button !== 0) return
     const target = e.target as HTMLElement
+    if (e.pointerType !== 'mouse') {
+      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (pointers.current.size === 2) {
+        const [a, b] = [...pointers.current.values()]
+        pinchRef.current = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, scale }
+        dragRef.current = null
+        e.currentTarget.setPointerCapture(e.pointerId)
+        return
+      }
+      // No hover on touch screens: a tap inspects the pixel under the finger.
+      if (!target.closest('.split-handle')) inspect(e.clientX, e.clientY)
+    }
     if (target.closest('.split-handle')) {
       dragRef.current = { kind: 'split', x: e.clientX, y: e.clientY, px: 0, py: 0 }
     } else if (zoom !== null && target.closest('.canvas-wrap')) {
@@ -146,6 +170,15 @@ export function Viewer(props: Props) {
   }
 
   const onPointerMove = (e: RPointerEvent<HTMLDivElement>) => {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    const pinch = pinchRef.current
+    if (pinch && pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()]
+      const rect = containerRef.current!.getBoundingClientRect()
+      const target = (pinch.scale * Math.hypot(a.x - b.x, a.y - b.y)) / pinch.dist
+      zoomAround(target / scale, (a.x + b.x) / 2 - rect.left, (a.y + b.y) / 2 - rect.top)
+      return
+    }
     const drag = dragRef.current
     if (drag?.kind === 'pan') {
       setPan({ x: drag.px + e.clientX - drag.x, y: drag.py + e.clientY - drag.y })
@@ -156,15 +189,13 @@ export function Viewer(props: Props) {
       setSplitPos(Math.min(1, Math.max(0, (e.clientX - rect.left - left) / dispW)))
       return
     }
-    if (!shown) return
-    const p = toImage(e.clientX, e.clientY)
-    const inside = p.x >= 0 && p.y >= 0 && p.x < shown.width && p.y < shown.height
-    setProbe(inside ? p : null)
-    props.onHover(inside ? p : null)
+    if (e.pointerType === 'mouse') inspect(e.clientX, e.clientY)
   }
 
-  const endDrag = () => {
+  const endDrag = (e: RPointerEvent<HTMLDivElement>) => {
     dragRef.current = null
+    pointers.current.delete(e.pointerId)
+    if (pointers.current.size < 2) pinchRef.current = null
   }
 
   const pixel = probe && shown ? Array.from(shown.rgba.subarray((probe.y * shown.width + probe.x) * 4, (probe.y * shown.width + probe.x) * 4 + 3)) : null
@@ -190,7 +221,7 @@ export function Viewer(props: Props) {
         </div>
         <button
           type="button"
-          className="btn sm ghost"
+          className="btn sm ghost hold-btn"
           disabled={!original}
           onPointerDown={() => setHolding(true)}
           onPointerUp={() => setHolding(false)}
@@ -199,7 +230,8 @@ export function Viewer(props: Props) {
           onKeyUp={() => setHolding(false)}
           onBlur={() => setHolding(false)}
         >
-          {t('viewer.hold')}
+          <span className="hide-sm">{t('viewer.hold')}</span>
+          <span className="show-sm">{t('viewer.original')}</span>
         </button>
         <span className="toolbar-spacer" />
         <div className="samples" aria-label={t('viewer.samples')} role="group">
@@ -242,7 +274,9 @@ export function Viewer(props: Props) {
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        onPointerLeave={() => {
+        onPointerLeave={(e) => {
+          // Touch screens send a leave after every tap; keep the tapped pixel.
+          if (e.pointerType !== 'mouse') return
           setProbe(null)
           props.onHover(null)
         }}
@@ -362,7 +396,7 @@ export function Viewer(props: Props) {
           </button>
           <button
             type="button"
-            className="btn sm ghost"
+            className="btn sm ghost actual-btn"
             onClick={() => {
               setZoom(1)
               setPan({ x: 0, y: 0 })
@@ -374,7 +408,7 @@ export function Viewer(props: Props) {
         </div>
         <span className="toolbar-spacer" />
         {shown && (
-          <span className="probe" dir="ltr">
+          <span className={`probe${pixel && probe ? '' : ' idle'}`} dir="ltr">
             {pixel && probe ? (
               <>
                 <span className="swatch" style={{ background: `rgb(${pixel.join(',')})` }} />

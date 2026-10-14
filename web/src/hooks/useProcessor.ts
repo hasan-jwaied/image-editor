@@ -35,7 +35,7 @@ export function useProcessor(client: EngineClient, source: Img | null, steps: St
   })
   const sourceRef = useRef<Img | null>(null)
   const currentKeys = cumulativeKeys(steps)
-  const signature = currentKeys.at(-1) ?? ''
+  const signature = currentKeys[currentKeys.length - 1] ?? ''
 
   useEffect(() => {
     if (!source) return

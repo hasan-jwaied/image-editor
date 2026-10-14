@@ -7,8 +7,9 @@ export default defineConfig(({ mode }) => ({
   // relative URLs would resolve against "/" there.
   base: mode === 'site' ? '/lab/' : './',
   plugins: [react()],
-  worker: { format: 'es' },
+  // A classic (IIFE) worker also runs on Safari 14, which lacks module workers.
+  worker: { format: 'iife' },
   server: { fs: { allow: ['..'] } },
-  build: { target: 'es2022', sourcemap: mode !== 'site', outDir: mode === 'site' ? 'dist-site' : 'dist' },
+  build: { target: ['es2020', 'safari14'], sourcemap: mode !== 'site', outDir: mode === 'site' ? 'dist-site' : 'dist' },
   test: { include: ['tests/**/*.test.ts'], testTimeout: 30_000 },
 }))

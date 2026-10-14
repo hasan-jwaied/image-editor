@@ -103,10 +103,10 @@ export function PipelinePanel({ pipeline, dispatch, processed, onExport, canExpo
                     <button type="button" className="icon-btn sm" onClick={() => dispatch({ type: 'toggle', id: step.id })} aria-label={step.enabled ? t('step.disable') : t('step.enable')} title={step.enabled ? t('step.disable') : t('step.enable')} aria-pressed={!step.enabled}>
                       {step.enabled ? <Eye /> : <EyeOff />}
                     </button>
-                    <button type="button" className="icon-btn sm" onClick={() => dispatch({ type: 'move', id: step.id, delta: -1 })} disabled={i === 0} aria-label={t('step.up')} title={t('step.up')}>
+                    <button type="button" className="icon-btn sm step-move" onClick={() => dispatch({ type: 'move', id: step.id, delta: -1 })} disabled={i === 0} aria-label={t('step.up')} title={t('step.up')}>
                       <Up />
                     </button>
-                    <button type="button" className="icon-btn sm" onClick={() => dispatch({ type: 'move', id: step.id, delta: 1 })} disabled={i === steps.length - 1} aria-label={t('step.down')} title={t('step.down')}>
+                    <button type="button" className="icon-btn sm step-move" onClick={() => dispatch({ type: 'move', id: step.id, delta: 1 })} disabled={i === steps.length - 1} aria-label={t('step.down')} title={t('step.down')}>
                       <Down />
                     </button>
                     <button type="button" className="icon-btn sm danger" onClick={() => dispatch({ type: 'remove', id: step.id })} aria-label={t('step.remove')} title={t('step.remove')}>

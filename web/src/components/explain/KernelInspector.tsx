@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { Img } from '../../engine/image'
 import { roundHalfEven } from '../../engine/math'
 import { luma } from '../../engine/point'
+import { usePointerHint } from '../../hooks/usePointerHint'
 import { useI18n } from '../../i18n'
 
 export type Kernel = number[][]
@@ -33,6 +34,7 @@ export function KernelInspector({
   combine?: (sums: number[]) => { label: string; value: number }
 }) {
   const { t, num } = useI18n()
+  const hint = usePointerHint()
   const plane = useMemo(() => luma(input), [input])
   const { width: w, height: h } = input
   const p = hover && hover.x < w && hover.y < h ? hover : null
@@ -62,7 +64,7 @@ export function KernelInspector({
 
   return (
     <div className="kernel-inspector">
-      <p className="small muted">{p ? t('explain.at', { x: p.x, y: p.y }) : t('explain.hover')}</p>
+      <p className="small muted">{p ? t('explain.at', { x: p.x, y: p.y }) : t(hint)}</p>
       <div className="kernel-grids" dir="ltr">
         <div>
           <div className="grid-label small">{t('explain.neighbourhood')}</div>

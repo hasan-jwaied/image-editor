@@ -1,6 +1,6 @@
 import { fromRGBA, type Img } from '../engine/image'
 
-export const MAX_MEGAPIXELS = 50
+const MAX_MEGAPIXELS = 50
 
 export class DecodeError extends Error {
   constructor(
@@ -11,22 +11,45 @@ export class DecodeError extends Error {
   }
 }
 
+type Source = { draw: CanvasImageSource; width: number; height: number; release: () => void }
+
+/** createImageBitmap where available; an <img> element on older Safari. */
+async function load(blob: Blob): Promise<Source> {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' })
+      return { draw: bitmap, width: bitmap.width, height: bitmap.height, release: () => bitmap.close() }
+    } catch {
+      /* unsupported option or format: fall through to <img> */
+    }
+  }
+  const url = URL.createObjectURL(blob)
+  const img = new Image()
+  img.src = url
+  try {
+    await img.decode()
+  } catch {
+    URL.revokeObjectURL(url)
+    throw new DecodeError('decode')
+  }
+  return { draw: img, width: img.naturalWidth, height: img.naturalHeight, release: () => URL.revokeObjectURL(url) }
+}
+
 /**
  * Decode any browser-supported image and fit it within `maxSide`.
  * The browser decodes the file and does the initial downscale (I/O, like
  * Pillow on the Python side); every operation after that is ours.
  */
 export async function decodeImage(blob: Blob, maxSide: number): Promise<{ img: Img; original: [number, number] }> {
-  let bitmap: ImageBitmap
-  try {
-    bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' })
-  } catch {
+  const source = await load(blob)
+  const { width, height } = source
+  const mp = (width * height) / 1e6
+  if (!width || !height) {
+    source.release()
     throw new DecodeError('decode')
   }
-  const { width, height } = bitmap
-  const mp = (width * height) / 1e6
   if (mp > MAX_MEGAPIXELS) {
-    bitmap.close()
+    source.release()
     throw new DecodeError('tooLarge', Math.round(mp))
   }
   const scale = Math.min(1, maxSide / Math.max(width, height))
@@ -36,11 +59,14 @@ export async function decodeImage(blob: Blob, maxSide: number): Promise<{ img: I
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new DecodeError('decode')
+  if (!ctx) {
+    source.release()
+    throw new DecodeError('decode')
+  }
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
-  ctx.drawImage(bitmap, 0, 0, w, h)
-  bitmap.close()
+  ctx.drawImage(source.draw, 0, 0, w, h)
+  source.release()
   const data = ctx.getImageData(0, 0, w, h)
   return { img: fromRGBA(data.data, w, h), original: [width, height] }
 }

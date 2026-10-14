@@ -24,12 +24,19 @@ import { EngineClient } from './worker/client'
 type Tab = 'add' | 'pipeline' | 'explain'
 const SIZE_KEY = 'pixel-lab:working-size'
 
+/** A phone or a low-core device starts at 1024 px (seam carving costs ~width² × height). */
+function defaultSize(): number {
+  const small = window.matchMedia('(max-width: 899px)').matches
+  const slow = (navigator.hardwareConcurrency || 8) <= 4
+  return small || slow ? 1024 : 1600
+}
+
 function storedSize(): number {
   try {
     const v = Number(localStorage.getItem(SIZE_KEY))
-    return [1024, 1600, 2400, 4096].includes(v) ? v : 1600
+    return [1024, 1600, 2400, 4096].includes(v) ? v : defaultSize()
   } catch {
-    return 1600
+    return defaultSize()
   }
 }
 
@@ -139,13 +146,14 @@ export function App() {
     window.history.replaceState(null, '', url)
   }, [steps])
 
-  useEffect(() => {
+  const chooseWorkingSize = (size: number) => {
+    setWorkingSize(size)
     try {
-      localStorage.setItem(SIZE_KEY, String(workingSize))
+      localStorage.setItem(SIZE_KEY, String(size)) // only an explicit choice is remembered
     } catch {
       /* not persisted */
     }
-  }, [workingSize])
+  }
 
   const selectedRef = useRef(selected)
   selectedRef.current = selected
@@ -281,7 +289,7 @@ export function App() {
               onSample={(s) => void loadSample(s)}
               activeSample={input?.sample ?? null}
               workingSize={workingSize}
-              onWorkingSize={setWorkingSize}
+              onWorkingSize={chooseWorkingSize}
               zoomRequest={zoomRequest}
             />
           </div>
