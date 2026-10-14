@@ -7,35 +7,87 @@ async function settled(page: Page) {
   await expect(page.locator('.viewer-status')).toHaveCount(0, { timeout: 45_000 })
 }
 
-test('loads the sample, runs the default pipeline and stays error-free', async ({ page, isMobile }) => {
+/** Phones start at a 1024px working size, laptops at 1600px (the 1428 × 968 sample fits as is). */
+const sampleSize = (isMobile: boolean) => (isMobile ? '1,024 × 694' : '1,428 × 968')
+
+async function showPipeline(page: Page, isMobile: boolean) {
+  if (isMobile) await page.getByRole('tab', { name: 'Pipeline' }).click()
+}
+
+test('nothing runs until the visitor chooses an operation', async ({ page, isMobile }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   await page.goto('./')
   await settled(page)
-  // The default recipe narrows the image by 30% with seam carving; phones start
-  // at a 1024px working size (1428 × 968 → 1024 × 694), laptops at 1600px.
-  await expect(page.locator('.probe')).toContainText(isMobile ? '717 × 694' : '1,000 × 968', { timeout: 45_000 })
+  await showPipeline(page, isMobile)
+  await expect(page.locator('.steps > li')).toHaveCount(0)
+  await expect(page.locator('.probe')).toContainText(sampleSize(isMobile))
+  // With no steps there is nothing to compare or export.
+  await expect(page.getByRole('radio', { name: 'Split' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Download PNG' })).toBeDisabled()
+
+  // Switching images and reloading leave the image untouched too.
+  await page.getByRole('button', { name: 'Apollo 11' }).click()
+  await settled(page)
+  await expect(page.locator('.steps > li')).toHaveCount(0)
+  await page.reload()
+  await settled(page)
+  await showPipeline(page, isMobile)
+  await expect(page.locator('.steps > li')).toHaveCount(0)
+  expect(new URL(page.url()).hash).toBe('')
   expect(errors).toEqual([])
 })
 
-test('recipes, undo and the share link round-trip', async ({ page, isMobile }) => {
+test('recipes, undo, and a shared link that applies once', async ({ page, context, isMobile }) => {
   await page.goto('./')
   await settled(page)
   await page.getByRole('button', { name: 'Newsprint' }).click()
   await settled(page)
-  if (isMobile) await page.getByRole('tab', { name: 'Pipeline' }).click()
+  await showPipeline(page, isMobile)
   await expect(page.locator('.steps > li')).toHaveCount(3)
   await page.keyboard.press('Control+z')
-  await expect(page.locator('.steps > li')).toHaveCount(1)
+  await expect(page.locator('.steps > li')).toHaveCount(0)
   await page.keyboard.press('Control+Shift+z')
   await expect(page.locator('.steps > li')).toHaveCount(3)
-  // The URL hash carries the recipe; reloading restores it.
-  expect(page.url()).toContain('#r=')
-  await page.reload()
+  // The address bar never tracks the pipeline; only "Copy link" makes a link.
+  expect(new URL(page.url()).hash).toBe('')
+
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.getByRole('button', { name: 'Copy link' }).click()
+  const link = await page.evaluate(() => navigator.clipboard.readText())
+  expect(link).toContain('#r=')
+
+  const shared = await context.newPage()
+  await shared.goto(link)
+  await settled(shared)
+  await showPipeline(shared, isMobile)
+  await expect(shared.locator('.steps > li')).toHaveCount(3)
+  expect(new URL(shared.url()).hash).toBe('')
+  await shared.reload()
+  await settled(shared)
+  await showPipeline(shared, isMobile)
+  await expect(shared.locator('.steps > li')).toHaveCount(0)
+})
+
+test('panels hand the scroll on to the page', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'wheel scrolling is a laptop/desktop gesture')
+  await page.goto('./')
   await settled(page)
-  if (isMobile) await page.getByRole('tab', { name: 'Pipeline' }).click()
-  await expect(page.locator('.steps > li')).toHaveCount(3)
+  await page.evaluate(() =>
+    window.scrollTo({ top: document.getElementById('lab')!.offsetTop - 48, behavior: 'instant' }),
+  )
+  for (const panel of ['.library-panel', '.inspector']) {
+    // Scroll the panel to its end first; the next wheel gesture must reach the page.
+    await page.locator(panel).evaluate((el) => (el.scrollTop = el.scrollHeight))
+    const before = await page.evaluate(() => window.scrollY)
+    await page.locator(panel).hover()
+    await page.mouse.wheel(0, 400)
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before)
+    await page.evaluate(() =>
+      window.scrollTo({ top: document.getElementById('lab')!.offsetTop - 48, behavior: 'instant' }),
+    )
+  }
 })
 
 test('explainers respond to the image', async ({ page, isMobile }) => {

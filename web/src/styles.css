@@ -804,8 +804,8 @@ option {
   }
   .library-panel,
   .inspector {
+    /* Scrolls its own list first, then hands the gesture on to the page. */
     overflow-y: auto;
-    overscroll-behavior: contain;
     scrollbar-width: thin;
   }
 }
