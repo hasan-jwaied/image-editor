@@ -29,6 +29,9 @@ export const he: Record<MessageKey, string> = {
 
   'library.title': 'פעולות',
   'library.search': 'חיפוש פעולות',
+  'library.hint': 'לחיצה מחילה · + משלב',
+  'library.apply': 'החלת {name}',
+  'library.applied': '{name}, בשרשרת',
   'library.add': 'הוספת {name} לשרשרת העיבוד',
   'library.empty': 'אין פעולה שמתאימה ל־„{q}”.',
   'category.adjust': 'כוונון',
