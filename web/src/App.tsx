@@ -47,8 +47,9 @@ function storedSize(): number {
  * applied once and then removed from the address bar, so a reload starts clean.
  */
 function initialSteps() {
+  if (!window.location.hash.startsWith('#r=')) return []
   const shared = decodeRecipeHash(window.location.hash)
-  if (window.location.hash) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+  window.history.replaceState(null, '', window.location.pathname + window.location.search)
   return shared ? shared.map((s) => makeStep(s.op, s.params, s.enabled)) : []
 }
 
@@ -99,6 +100,13 @@ export function App() {
   useEffect(() => {
     void loadSample(SAMPLES[0])
   }, [loadSample])
+
+  // Section links such as …/#how: the target only exists once React has rendered,
+  // and its position settles once the web font has replaced the fallback.
+  useEffect(() => {
+    const id = window.location.hash.slice(1)
+    if (id) void document.fonts.ready.then(() => document.getElementById(id)?.scrollIntoView())
+  }, [])
 
   useEffect(() => {
     if (!input) return
@@ -178,10 +186,15 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const addOp = (op: string) => {
-    dispatch({ type: 'add', op })
+  // Clicking an operation shows it on its own (its effect stays readable);
+  // "+" stacks it. Re-applying the op that is already alone keeps its settings.
+  const applyOp = (op: string) => {
+    if (steps.length === 1 && steps[0].op === op) dispatch({ type: 'select', id: steps[0].id })
+    else dispatch({ type: 'replace', steps: [{ op }] })
     if (!wide) setTab('explain')
   }
+  const addOp = (op: string) => dispatch({ type: 'add', op })
+  const activeOps = useMemo(() => new Set(steps.map((s) => s.op)), [steps])
 
   const applyPreset = (id: string) => {
     const preset = PRESETS.find((p) => p.id === id)
@@ -261,7 +274,7 @@ export function App() {
               <h2 id="library-title" className="panel-title">
                 {t('library.title')}
               </h2>
-              <Library onAdd={addOp} />
+              <Library active={activeOps} onApply={applyOp} onAdd={addOp} />
             </aside>
           )}
 
@@ -332,7 +345,7 @@ export function App() {
                   aria-labelledby={`tab-${activeTab}`}
                   className="tabpanel"
                 >
-                  {activeTab === 'add' && <Library onAdd={addOp} />}
+                  {activeTab === 'add' && <Library active={activeOps} onApply={applyOp} onAdd={addOp} />}
                   {activeTab === 'pipeline' && pipelinePanel}
                   {activeTab === 'explain' && explainPanel}
                 </div>

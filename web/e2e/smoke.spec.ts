@@ -70,6 +70,66 @@ test('recipes, undo, and a shared link that applies once', async ({ page, contex
   await expect(shared.locator('.steps > li')).toHaveCount(0)
 })
 
+test('clicking an operation applies it alone; + stacks it', async ({ page, isMobile }) => {
+  const library = async () => {
+    if (isMobile) await page.getByRole('tab', { name: 'Add' }).click()
+  }
+  const stepNames = async () => {
+    await showPipeline(page, isMobile)
+    return page.locator('.steps .step-name').allTextContents()
+  }
+  await page.goto('./')
+  await settled(page)
+
+  await library()
+  await page.getByRole('button', { name: 'Apply Grayscale' }).click()
+  await settled(page)
+  expect(await stepNames()).toEqual(['Grayscale'])
+
+  // A second click on another operation replaces it, so each result stays readable.
+  await library()
+  await page.getByRole('button', { name: 'Apply Invert' }).click()
+  await settled(page)
+  expect(await stepNames()).toEqual(['Invert'])
+
+  // "+" stacks on top of what is there.
+  await library()
+  await page.getByRole('button', { name: 'Add Sepia to the pipeline' }).click()
+  await settled(page)
+  expect(await stepNames()).toEqual(['Invert', 'Sepia'])
+  await library()
+  await expect(page.getByRole('button', { name: 'Invert, in the pipeline' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Apply Grayscale' })).toBeVisible()
+
+  // Applying replaces the stack; undo brings it back.
+  await page.getByRole('button', { name: 'Apply Brightness' }).click()
+  await settled(page)
+  expect(await stepNames()).toEqual(['Brightness'])
+  await page.keyboard.press('Control+z')
+  expect(await stepNames()).toEqual(['Invert', 'Sepia'])
+  await page.keyboard.press('Control+Shift+z')
+
+  // Re-applying the operation that is already alone keeps its settings.
+  if (isMobile) await page.getByRole('tab', { name: 'How it works' }).click()
+  const slider = page.getByRole('slider', { name: 'Amount' })
+  await slider.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(slider).toHaveValue('31')
+  await library()
+  await page.getByRole('button', { name: 'Brightness, in the pipeline' }).click()
+  if (isMobile) await page.getByRole('tab', { name: 'How it works' }).click()
+  await expect(page.getByRole('slider', { name: 'Amount' })).toHaveValue('31')
+})
+
+test('a section link such as #how lands on that section, below the nav bar', async ({ page }) => {
+  await page.goto('./#how')
+  await expect
+    .poll(() => page.evaluate(() => Math.round(document.getElementById('how')!.getBoundingClientRect().top)))
+    .toBeGreaterThanOrEqual(48)
+  expect(new URL(page.url()).hash).toBe('#how')
+  await expect(page.locator('.steps > li')).toHaveCount(0)
+})
+
 test('panels hand the scroll on to the page', async ({ page, isMobile }) => {
   test.skip(isMobile, 'wheel scrolling is a laptop/desktop gesture')
   await page.goto('./')

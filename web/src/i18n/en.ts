@@ -27,6 +27,9 @@ export const en = {
 
   'library.title': 'Operations',
   'library.search': 'Search operations',
+  'library.hint': 'Click to apply · + to combine',
+  'library.apply': 'Apply {name}',
+  'library.applied': '{name}, in the pipeline',
   'library.add': 'Add {name} to the pipeline',
   'library.empty': 'No operation matches “{q}”.',
   'category.adjust': 'Adjust',
