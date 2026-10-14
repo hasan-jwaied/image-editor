@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "steps": [
+    { "op": "convolve", "params": { "preset": "custom", "weights": [0, -1, 0, -1, 5, -1, 0, -1, 0] } },
+    { "op": "seam_carve", "params": { "width_percent": 20 }, "enabled": false },
+    { "op": "rotate", "params": { "direction": "ccw" } }
+  ]
+}

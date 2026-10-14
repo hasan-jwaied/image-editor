@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "steps": [
+    { "op": "grayscale", "params": {} },
+    { "op": "equalize", "params": {} },
+    { "op": "dither", "params": { "levels": 2 } }
+  ]
+}

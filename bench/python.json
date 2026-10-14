@@ -1,0 +1,90 @@
+{
+  "engine": "python",
+  "runtime": "CPython 3.10.12",
+  "machine": "x86_64",
+  "blur": {
+    "image": [
+      1000,
+      678
+    ],
+    "radii": [
+      1,
+      2,
+      4,
+      7,
+      12,
+      20
+    ],
+    "ms": {
+      "v1": [
+        1450.9,
+        3054.2,
+        8603.1,
+        22431.4,
+        null,
+        null
+      ],
+      "naive": [
+        589.2,
+        1482.2,
+        4503.4,
+        12392.7,
+        null,
+        null
+      ],
+      "separable": [
+        452.0,
+        623.0,
+        1001.9,
+        1649.7,
+        2747.5,
+        4267.7
+      ],
+      "sat": [
+        282.7,
+        278.2,
+        270.0,
+        285.9,
+        281.5,
+        289.5
+      ]
+    }
+  },
+  "ops": {
+    "image": [
+      640,
+      434
+    ],
+    "ms": {
+      "grayscale": 60.6,
+      "invert": 27.8,
+      "brightness": 28.3,
+      "contrast": 28.0,
+      "equalize": 340.3,
+      "sepia": 265.8,
+      "flip": 4.5,
+      "rotate": 13.2,
+      "resize": 96.2,
+      "box_blur": 350.3,
+      "gaussian_blur": 1791.6,
+      "sharpen": 1224.4,
+      "convolve": 627.3,
+      "sobel": 351.3,
+      "canny": 1071.6,
+      "adaptive_threshold": 298.4,
+      "posterize": 28.7,
+      "dither": 775.5,
+      "seam_carve": 20114.8
+    }
+  },
+  "io": {
+    "image": [
+      1000,
+      678
+    ],
+    "ms": {
+      "v1_save": 3020.0,
+      "v2_save": 24.3
+    }
+  }
+}
