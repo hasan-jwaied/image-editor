@@ -11,9 +11,9 @@ interface Props {
 }
 
 export function ParamControl({ op, spec, value, onChange }: Props) {
-  const { t, has, num } = useI18n()
+  const { t, num } = useI18n()
   const id = useId()
-  const label = paramLabel(t, has, op, spec.name)
+  const label = paramLabel(t, op, spec.name)
 
   if (spec.type === 'enum') {
     const options = spec.options ?? []
@@ -31,7 +31,7 @@ export function ParamControl({ op, spec, value, onChange }: Props) {
                 className={value === o ? 'on' : ''}
                 onClick={() => onChange(o)}
               >
-                {optionLabel(t, has, o)}
+                {optionLabel(t, o)}
               </button>
             ))}
           </div>
@@ -46,7 +46,7 @@ export function ParamControl({ op, spec, value, onChange }: Props) {
         <select id={id} value={String(value)} onChange={(e) => onChange(e.target.value)}>
           {options.map((o) => (
             <option key={o} value={o}>
-              {optionLabel(t, has, o)}
+              {optionLabel(t, o)}
             </option>
           ))}
         </select>

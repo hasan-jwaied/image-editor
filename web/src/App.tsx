@@ -5,15 +5,16 @@ import { Header } from './components/Header'
 import { Back } from './components/Icons'
 import { Library } from './components/Library'
 import { PipelinePanel } from './components/PipelinePanel'
-import { StepParams } from './components/StepDetail'
 import { Viewer, type Overlay } from './components/Viewer'
 import { toRGBA, type Img } from './engine/image'
+import type { ParamValue } from './engine/spec'
 import { useMediaQuery } from './hooks/useMediaQuery'
 import { useProcessor } from './hooks/useProcessor'
 import { useTheme } from './hooks/useTheme'
 import { useI18n } from './i18n'
-import { HOME_URL } from './lib/config'
+import { HOME_URL, WORKING_SIZES } from './lib/config'
 import { DecodeError, decodeImage } from './lib/decode'
+import { downloadBlob } from './lib/download'
 import { frameOf } from './lib/frame'
 import { opLabel } from './lib/labels'
 import { PRESETS, SAMPLES, type Sample } from './lib/samples'
@@ -34,7 +35,7 @@ function defaultSize(): number {
 function storedSize(): number {
   try {
     const v = Number(localStorage.getItem(SIZE_KEY))
-    return [1024, 1600, 2400, 4096].includes(v) ? v : defaultSize()
+    return (WORKING_SIZES as readonly number[]).includes(v) ? v : defaultSize()
   } catch {
     return defaultSize()
   }
@@ -62,14 +63,15 @@ function useDelayed(value: boolean, delay = 180) {
 
 export function App() {
   const { theme, toggle } = useTheme()
-  const { t, has } = useI18n()
+  const { t } = useI18n()
   const wide = useMediaQuery('(min-width: 1100px)')
   const [client] = useState(() => new EngineClient())
   const [pipeline, dispatch] = useReducer(pipelineReducer, undefined, () => initialPipeline(initialSteps()))
   const [input, setInput] = useState<{ blob: Blob; sample: string | null } | null>(null)
   const [source, setSource] = useState<Img | null>(null)
   const [loading, setLoading] = useState(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
+  // Stored as data, translated when rendered, so switching language doesn't reload the image.
+  const [loadError, setLoadError] = useState<{ tooLarge: number } | 'decode' | null>(null)
   const [workingSize, setWorkingSize] = useState(storedSize)
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null)
   const [overlay, setOverlay] = useState<Overlay | null>(null)
@@ -81,18 +83,17 @@ export function App() {
     setLoading(true)
     try {
       const res = await fetch(sample.src)
+      if (!res.ok) throw new Error(res.statusText)
       setInput({ blob: await res.blob(), sample: sample.id })
     } catch {
-      setLoadError(t('error.decode'))
+      setLoadError('decode')
       setLoading(false)
     }
-  }, [t])
+  }, [])
 
   useEffect(() => {
     void loadSample(SAMPLES[0])
-    // first render only
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [loadSample])
 
   useEffect(() => {
     if (!input) return
@@ -100,17 +101,16 @@ export function App() {
     setLoading(true)
     setLoadError(null)
     decodeImage(input.blob, workingSize)
-      .then(({ img }) => alive && setSource(img))
+      .then((img) => alive && setSource(img))
       .catch((e: unknown) => {
         if (!alive) return
-        if (e instanceof DecodeError && e.kind === 'tooLarge') setLoadError(t('error.tooLarge', { mp: e.megapixels }))
-        else setLoadError(t('error.decode'))
+        setLoadError(e instanceof DecodeError && e.kind === 'tooLarge' ? { tooLarge: e.megapixels } : 'decode')
       })
       .finally(() => alive && setLoading(false))
     return () => {
       alive = false
     }
-  }, [input, workingSize, t])
+  }, [input, workingSize])
 
   const processed = useProcessor(client, source, steps)
 
@@ -132,7 +132,7 @@ export function App() {
   const busyLabel = showBusy
     ? loading
       ? t('viewer.loading')
-      : t('viewer.processing', { op: runningOp ? opLabel(t, has, runningOp) : '…' }) +
+      : t('viewer.processing', { op: runningOp ? opLabel(t, runningOp) : '…' }) +
         (processed.fraction !== null ? ` ${Math.round(processed.fraction * 100)}%` : '')
     : null
 
@@ -197,17 +197,21 @@ export function App() {
     canvas.height = finalImg.height
     canvas.getContext('2d')?.putImageData(new ImageData(toRGBA(finalImg), finalImg.width, finalImg.height), 0, 0)
     canvas.toBlob((blob) => {
-      if (!blob) return
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `pixel-lab-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.png`
-      a.click()
-      window.setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+      if (blob) downloadBlob(blob, `pixel-lab-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.png`)
     }, 'image/png')
   }
 
+  const setParam = (name: string, value: ParamValue) =>
+    selected && dispatch({ type: 'setParam', id: selected.id, name, value })
+
   const pipelinePanel = (
-    <PipelinePanel pipeline={pipeline} dispatch={dispatch} processed={processed} onExport={exportPng} canExport={!!finalImg && !processed.busy} />
+    <PipelinePanel
+      pipeline={pipeline}
+      dispatch={dispatch}
+      processed={processed}
+      onExport={exportPng}
+      canExport={!!finalImg && !processed.busy}
+    />
   )
   const explainPanel = (
     <Explain
@@ -219,17 +223,9 @@ export function App() {
       client={client}
       overlay={overlay}
       setOverlay={setOverlay}
-      setParam={(name, value) => selected && dispatch({ type: 'setParam', id: selected.id, name, value })}
+      setParam={setParam}
+      resetParams={() => selected && dispatch({ type: 'resetParams', id: selected.id })}
       requestZoom={(zoom) => setZoomRequest({ zoom, nonce: Date.now() })}
-      controls={
-        selected && (
-          <StepParams
-            step={selected}
-            onChange={(name, value) => dispatch({ type: 'setParam', id: selected.id, name, value })}
-            onReset={() => dispatch({ type: 'resetParams', id: selected.id })}
-          />
-        )
-      }
     />
   )
 
@@ -252,7 +248,7 @@ export function App() {
           <div className="presets" role="group" aria-label={t('hero.try')}>
             <span className="presets-label">{t('hero.try')}</span>
             {PRESETS.map((p) => (
-              <button key={p.id} type="button" className="chip-btn" onClick={() => applyPreset(p.id)}>
+              <button key={p.id} type="button" className="chip-btn glass" onClick={() => applyPreset(p.id)}>
                 {t(p.label)}
               </button>
             ))}
@@ -277,11 +273,21 @@ export function App() {
               overlay={overlay}
               onCloseOverlay={() => setOverlay(null)}
               busyLabel={busyLabel}
-              error={loadError ?? processed.error}
+              error={
+                loadError === 'decode'
+                  ? t('error.decode')
+                  : loadError
+                    ? t('error.tooLarge', { mp: loadError.tooLarge })
+                    : processed.error
+              }
               loading={loading && !source}
               stepChip={
                 selIndex >= 0 && selIndex < steps.length - 1
-                  ? { n: selIndex + 1, total: steps.length, onShowFinal: () => dispatch({ type: 'select', id: steps[steps.length - 1].id }) }
+                  ? {
+                      n: selIndex + 1,
+                      total: steps.length,
+                      onShowFinal: () => dispatch({ type: 'select', id: steps[steps.length - 1].id }),
+                    }
                   : null
               }
               onHover={setHover}
@@ -304,7 +310,7 @@ export function App() {
               </>
             ) : (
               <>
-                <div className="tabs" role="tablist" aria-label={t('tabs.pipeline')}>
+                <div className="tabs segmented" role="tablist" aria-label={t('tabs.pipeline')}>
                   {tabs.map((tb) => (
                     <button
                       key={tb.id}
@@ -320,7 +326,12 @@ export function App() {
                     </button>
                   ))}
                 </div>
-                <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`} className="tabpanel">
+                <div
+                  role="tabpanel"
+                  id={`panel-${activeTab}`}
+                  aria-labelledby={`tab-${activeTab}`}
+                  className="tabpanel"
+                >
                   {activeTab === 'add' && <Library onAdd={addOp} />}
                   {activeTab === 'pipeline' && pipelinePanel}
                   {activeTab === 'explain' && explainPanel}

@@ -2,7 +2,8 @@
  * Recipes: the JSON format shared with the Python CLI
  * (python/src/pixel_lab/recipe.py), plus URL-hash sharing.
  */
-import { OP_SPECS, defaultParams, resolveParams, type ParamValue, type Params } from '../engine/spec'
+import { defaultParams, isOp, resolveParams, type ParamValue, type Params } from '../engine/spec'
+import { MAX_STEPS } from './pipeline'
 
 export interface RecipeStep {
   op: string
@@ -18,7 +19,11 @@ export interface Recipe {
 export function toRecipe(steps: { op: string; params: Params; enabled: boolean }[]): Recipe {
   return {
     version: 1,
-    steps: steps.map((s) => ({ op: s.op, params: minimalParams(s.op, s.params), ...(s.enabled ? {} : { enabled: false }) })),
+    steps: steps.map((s) => ({
+      op: s.op,
+      params: minimalParams(s.op, s.params),
+      ...(s.enabled ? {} : { enabled: false }),
+    })),
   }
 }
 
@@ -33,12 +38,19 @@ function minimalParams(op: string, params: Params): Params {
   return out
 }
 
+/** Shared links are untrusted; a recipe longer than any valid one is rejected unread. */
+const MAX_HASH_LENGTH = 8192
+
 export function parseRecipe(data: unknown): RecipeStep[] {
-  const r = data as Partial<Recipe>
+  const r = data as Partial<Recipe> | null
   if (!r || r.version !== 1 || !Array.isArray(r.steps)) throw new Error('not a pixel-lab recipe (version 1)')
-  return r.steps.map((s) => {
-    if (!s || typeof s.op !== 'string' || !OP_SPECS[s.op]) throw new Error(`unknown operation ${String(s?.op)}`)
-    return { op: s.op, params: resolveParams(s.op, s.params ?? {}), enabled: s.enabled !== false }
+  if (r.steps.length > MAX_STEPS) throw new Error(`a recipe has at most ${MAX_STEPS} steps`)
+  return r.steps.map((s: Partial<RecipeStep> | null) => {
+    if (!s || typeof s.op !== 'string' || !isOp(s.op)) throw new Error(`unknown operation ${String(s?.op)}`)
+    const params: unknown = s.params ?? {}
+    if (typeof params !== 'object' || params === null || Array.isArray(params))
+      throw new Error('params must be an object')
+    return { op: s.op, params: resolveParams(s.op, params as Record<string, unknown>), enabled: s.enabled !== false }
   })
 }
 
@@ -57,7 +69,7 @@ export const encodeRecipeHash = (recipe: Recipe) => `#r=${toBase64Url(JSON.strin
 
 export function decodeRecipeHash(hash: string): RecipeStep[] | null {
   const match = /[#&]r=([A-Za-z0-9_-]+)/.exec(hash)
-  if (!match) return null
+  if (!match || match[1].length > MAX_HASH_LENGTH) return null
   try {
     return parseRecipe(JSON.parse(fromBase64Url(match[1])))
   } catch {

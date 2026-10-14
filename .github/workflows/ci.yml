@@ -5,6 +5,9 @@ on:
     branches: [main, v2]
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -51,8 +54,8 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      - name: Lint
-        run: npm run lint
+      - name: Lint and formatting
+        run: npm run lint && npm run format:check
       - name: Type check
         run: npm run typecheck
       - name: Engine tests (incl. bit-exact match with Python golden outputs)

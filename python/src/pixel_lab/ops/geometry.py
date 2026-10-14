@@ -45,10 +45,16 @@ def _sample_positions(src: int, dst: int) -> tuple[list[int], list[int], list[fl
     return lo, hi, frac
 
 
+MAX_PIXELS = 50_000_000
+"""Upper bound on any result, so repeated upscaling can't exhaust memory. Same as TypeScript."""
+
+
 def resize_to(image: Image, width: int, height: int) -> Image:
     """Bilinear interpolation: blend the four nearest source pixels."""
     if width < 1 or height < 1:
         raise ValueError("target size must be at least 1x1")
+    if width * height > MAX_PIXELS:
+        raise ValueError("the result would be larger than 50 megapixels")
     x0, x1, fx = _sample_positions(image.width, width)
     y0, y1, fy = _sample_positions(image.height, height)
     columns = list(zip(x0, x1, fx))

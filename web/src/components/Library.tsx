@@ -6,7 +6,7 @@ import { opExplain, opLabel } from '../lib/labels'
 import { Plus, Search } from './Icons'
 
 export function Library({ onAdd }: { onAdd: (op: string) => void }) {
-  const { t, has } = useI18n()
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
 
   const groups = useMemo(() => {
@@ -17,11 +17,11 @@ export function Library({ onAdd }: { onAdd: (op: string) => void }) {
         ops: SPEC.operations.filter((op) => {
           if (op.category !== cat.id) return false
           if (!q) return true
-          return [op.id, op.label, opLabel(t, has, op.id)].some((s) => s.toLowerCase().includes(q))
+          return [op.id, opLabel(t, op.id)].some((s) => s.toLowerCase().includes(q))
         }),
       }))
       .filter((g) => g.ops.length)
-  }, [query, t, has])
+  }, [query, t])
 
   return (
     <div className="library">
@@ -41,12 +41,10 @@ export function Library({ onAdd }: { onAdd: (op: string) => void }) {
       {groups.length === 0 && <p className="muted small pad">{t('library.empty', { q: query })}</p>}
       {groups.map((g) => (
         <section key={g.id} className="library-group" aria-labelledby={`cat-${g.id}`}>
-          <h3 id={`cat-${g.id}`} className="eyebrow">
-            {t(`category.${g.id}` as MessageKey)}
-          </h3>
+          <h3 id={`cat-${g.id}`}>{t(`category.${g.id}` as MessageKey)}</h3>
           <ul role="list">
             {g.ops.map((op) => {
-              const label = opLabel(t, has, op.id)
+              const label = opLabel(t, op.id)
               return (
                 <li key={op.id}>
                   <button
@@ -54,7 +52,7 @@ export function Library({ onAdd }: { onAdd: (op: string) => void }) {
                     className="op-btn"
                     onClick={() => onAdd(op.id)}
                     aria-label={t('library.add', { name: label })}
-                    title={opExplain(t, has, op.id).split(/(?<=[.。])\s/)[0]}
+                    title={opExplain(t, op.id)}
                   >
                     <span className="op-name">{label}</span>
                     <span className="complexity" dir="ltr">

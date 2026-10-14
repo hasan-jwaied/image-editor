@@ -57,7 +57,14 @@ export function Header({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onTo
             >
               {theme === 'dark' ? <Sun /> : <Moon />}
             </button>
-            <a className="icon-btn" href={REPO_URL} target="_blank" rel="noopener noreferrer" aria-label={t('nav.github')} title={t('nav.github')}>
+            <a
+              className="icon-btn"
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t('nav.github')}
+              title={t('nav.github')}
+            >
               <Github />
             </a>
           </div>

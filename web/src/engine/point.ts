@@ -2,7 +2,7 @@
 import { isGray, makeImg, mapColor, type Img } from './image'
 import { roundHalfEven } from './math'
 
-export function applyLut(img: Img, lut: Uint8Array): Img {
+function applyLut(img: Img, lut: Uint8Array): Img {
   return mapColor(img, (p) => {
     const out = new Uint8Array(p.length)
     for (let i = 0; i < p.length; i++) out[i] = lut[p[i]]
@@ -10,7 +10,7 @@ export function applyLut(img: Img, lut: Uint8Array): Img {
   })
 }
 
-export function buildLut(fn: (v: number) => number): Uint8Array {
+function buildLut(fn: (v: number) => number): Uint8Array {
   const lut = new Uint8Array(256)
   for (let v = 0; v < 256; v++) lut[v] = fn(v)
   return lut
@@ -24,8 +24,7 @@ export function luma(img: Img): Uint8Array {
   return out
 }
 
-export const grayscale = (img: Img): Img =>
-  isGray(img) ? img : makeImg(img.width, img.height, [luma(img)], img.alpha)
+export const grayscale = (img: Img): Img => (isGray(img) ? img : makeImg(img.width, img.height, [luma(img)], img.alpha))
 
 export const invertLut = () => buildLut((v) => 255 - v)
 export const brightnessLut = (amount: number) => buildLut((v) => Math.min(255, Math.max(0, v + amount)))

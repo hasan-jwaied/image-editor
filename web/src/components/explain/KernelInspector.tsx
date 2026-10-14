@@ -72,7 +72,15 @@ export function KernelInspector({
             {Array.from({ length: size * size }, (_, i) => {
               const v = neighbourhood?.[Math.floor(i / size)][i % size]
               return (
-                <span key={i} className="cell px" style={v !== undefined ? { background: `rgb(${v},${v},${v})`, color: v > 140 ? '#111' : '#fff' } : undefined}>
+                <span
+                  key={i}
+                  className="cell px"
+                  style={
+                    v !== undefined
+                      ? { background: `rgb(${v},${v},${v})`, color: v > 140 ? '#111' : '#fff' }
+                      : undefined
+                  }
+                >
                   {v ?? '·'}
                 </span>
               )
@@ -81,9 +89,7 @@ export function KernelInspector({
         </div>
         {flipped.map((k, idx) => (
           <div key={idx}>
-            <div className="grid-label small">
-              {kernels[idx].name ?? t('explain.weights')}
-            </div>
+            <div className="grid-label small">{kernels[idx].name ?? t('explain.weights')}</div>
             <div className="matrix" style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}>
               {k.flat().map((wt, i) => (
                 <span key={i} className={`cell w${wt > 0 ? ' pos' : wt < 0 ? ' neg' : ''}`}>

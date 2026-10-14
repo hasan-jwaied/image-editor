@@ -12,7 +12,7 @@ export interface Img {
   readonly alpha: Uint8Array | null
 }
 
-export type Mode = 'L' | 'LA' | 'RGB' | 'RGBA'
+type Mode = 'L' | 'LA' | 'RGB' | 'RGBA'
 
 export function makeImg(width: number, height: number, color: Uint8Array[], alpha: Uint8Array | null = null): Img {
   if (color.length !== 1 && color.length !== 3) throw new Error(`expected 1 or 3 color planes, got ${color.length}`)
@@ -46,12 +46,7 @@ export function mapColor(img: Img, fn: (plane: Uint8Array) => Uint8Array): Img {
 }
 
 /** Apply a geometric transform to every plane, including alpha. */
-export function mapPlanes(
-  img: Img,
-  width: number,
-  height: number,
-  fn: (plane: Uint8Array) => Uint8Array,
-): Img {
+export function mapPlanes(img: Img, width: number, height: number, fn: (plane: Uint8Array) => Uint8Array): Img {
   return makeImg(width, height, img.color.map(fn), img.alpha ? fn(img.alpha) : null)
 }
 

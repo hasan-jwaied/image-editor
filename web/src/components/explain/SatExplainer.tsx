@@ -38,7 +38,16 @@ export function SatExplainer({
   const stride = w + 2 * pad + 1
   const p = hover && hover.x < w && hover.y < h ? hover : null
 
-  let detail: { A: number; B: number; C: number; D: number; sum: number; area: number; mean: number; size: string } | null = null
+  let detail: {
+    A: number
+    B: number
+    C: number
+    D: number
+    sum: number
+    area: number
+    mean: number
+    size: string
+  } | null = null
   if (p && radius > 0) {
     let y0: number, y1: number, x0: number, x1: number
     if (mode === 'blur') {
@@ -77,7 +86,11 @@ export function SatExplainer({
           ].map(([l, x, y]) => (
             <g key={l as string}>
               <circle cx={x as number} cy={y as number} r="3.5" className="sat-dot" />
-              <text x={(x as number) + ((l as string) === 'A' || (l as string) === 'C' ? -11 : 6)} y={(y as number) + ((l as string) < 'C' ? -4 : 12)} className="sat-label">
+              <text
+                x={(x as number) + ((l as string) === 'A' || (l as string) === 'C' ? -11 : 6)}
+                y={(y as number) + ((l as string) < 'C' ? -4 : 12)}
+                className="sat-label"
+              >
                 {l}
               </text>
             </g>

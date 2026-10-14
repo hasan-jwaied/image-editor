@@ -52,8 +52,12 @@ function samplePositions(src: number, dst: number) {
   return { lo, hi, frac }
 }
 
+/** Upper bound on any result, so repeated upscaling can't exhaust memory. Same as Python. */
+export const MAX_PIXELS = 50_000_000
+
 export function resizeTo(img: Img, width: number, height: number): Img {
   if (width < 1 || height < 1) throw new Error('target size must be at least 1x1')
+  if (width * height > MAX_PIXELS) throw new Error('the result would be larger than 50 megapixels')
   const sw = img.width
   const xs = samplePositions(sw, width)
   const ys = samplePositions(img.height, height)

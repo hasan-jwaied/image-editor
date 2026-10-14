@@ -71,8 +71,22 @@ def test_recipe_roundtrip_and_disabled_steps() -> None:
     assert run(img, steps).color[0] == [[245, 245], [245, 245]]
 
 
-def test_recipe_rejects_bad_input() -> None:
-    with pytest.raises(ValueError, match="version"):
-        recipe_from_json({"version": 99, "steps": []})
-    with pytest.raises(ValueError, match="steps"):
-        recipe_from_json({"version": 1})
+@pytest.mark.parametrize(
+    ("data", "message"),
+    [
+        ({"version": 99, "steps": []}, "version"),
+        ({"version": 1}, "steps"),
+        ({"version": 1, "steps": [{"params": {}}]}, "'op'"),
+        ({"version": 1, "steps": [{"op": "invert", "params": [1]}]}, "object"),
+        ({"version": 1, "steps": [{"op": "invert"}] * 33}, "at most 32"),
+        ("invert", "JSON object"),
+    ],
+)
+def test_recipe_rejects_bad_input(data: object, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        recipe_from_json(data)
+
+
+def test_results_above_50_megapixels_are_refused() -> None:
+    with pytest.raises(ValueError, match="50 megapixels"):
+        registry.get("resize").apply(Image.blank(4000, 4000, "L"), {"scale": 200})

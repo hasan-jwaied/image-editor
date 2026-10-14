@@ -11,7 +11,7 @@ license = "MIT"
 authors = [{ name = "Hasan Jwaied" }]
 requires-python = ">=3.10"
 # Pillow is used only to decode and encode image files. Every pixel operation is ours.
-dependencies = ["Pillow>=10.0"]
+dependencies = ["Pillow>=10.3"]  # 10.3 has the fixes for CVE-2023-4863, CVE-2023-50447 and CVE-2024-28219
 keywords = ["image-processing", "computer-vision", "algorithms", "seam-carving", "canny"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -49,7 +49,7 @@ ignore = ["E741", "B905", "RUF001", "RUF007"]
 [tool.mypy]
 python_version = "3.10"
 strict = true
-files = ["src"]
+files = ["src", "scripts/generate_golden.py", "scripts/generate_spec.py"]
 
 [[tool.mypy.overrides]]
 module = ["PIL.*"]

@@ -18,7 +18,7 @@ export interface Processed {
   error: string | null
 }
 
-export function cumulativeKeys(steps: StepState[]): string[] {
+function cumulativeKeys(steps: StepState[]): string[] {
   let key = ''
   return steps.map((s) => (key += JSON.stringify([s.op, s.params, s.enabled]) + '|'))
 }
@@ -34,7 +34,10 @@ export function useProcessor(client: EngineClient, source: Img | null, steps: St
     error: null,
   })
   const sourceRef = useRef<Img | null>(null)
+  const stepsRef = useRef(steps)
+  stepsRef.current = steps
   const currentKeys = cumulativeKeys(steps)
+  // Changes whenever any step's op, params or enabled flag changes (or a step is added/removed).
   const signature = currentKeys[currentKeys.length - 1] ?? ''
 
   useEffect(() => {
@@ -42,6 +45,7 @@ export function useProcessor(client: EngineClient, source: Img | null, steps: St
     let cancelled = false
     const sourceChanged = sourceRef.current !== source
     sourceRef.current = source
+    const steps = stepsRef.current
     const requestKeys = cumulativeKeys(steps)
     const payload = steps.map((s) => ({ op: s.op, params: s.params, enabled: s.enabled }))
 
@@ -69,14 +73,18 @@ export function useProcessor(client: EngineClient, source: Img | null, steps: St
       })
       .catch((err: unknown) => {
         if (err instanceof Superseded || cancelled) return
-        setState((s) => ({ ...s, busy: false, runningIndex: null, fraction: null, error: err instanceof Error ? err.message : String(err) }))
+        setState((s) => ({
+          ...s,
+          busy: false,
+          runningIndex: null,
+          fraction: null,
+          error: err instanceof Error ? err.message : String(err),
+        }))
       })
     return () => {
       cancelled = true
     }
-    // `signature` captures every step's op, params and enabled flag.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, source, signature, steps.length])
+  }, [client, source, signature])
 
   return { ...state, currentKeys }
 }

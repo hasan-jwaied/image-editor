@@ -1,5 +1,6 @@
-// Offline support: network-first for pages (always fresh when online),
-// cache-first for everything else (Vite gives assets content-hashed names).
+// Offline support for the standalone build: network-first for the page (always
+// fresh when online), cache-first for everything else (Vite gives assets
+// content-hashed names). Only successful same-origin GET responses are stored.
 const CACHE = 'pixel-lab-v1'
 
 self.addEventListener('install', (event) => {
@@ -14,32 +15,25 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
+/** Cache a successful response under `key` and pass it through unchanged. */
+function store(key, res) {
+  if (res.ok) {
+    const copy = res.clone()
+    caches.open(CACHE).then((c) => c.put(key, copy))
+  }
+  return res
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
-        .then((res) => {
-          const copy = res.clone()
-          caches.open(CACHE).then((c) => c.put('./', copy))
-          return res
-        })
+        .then((res) => store('./', res))
         .catch(() => caches.match('./')),
     )
     return
   }
-  event.respondWith(
-    caches.match(req).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
-            const copy = res.clone()
-            caches.open(CACHE).then((c) => c.put(req, copy))
-          }
-          return res
-        }),
-    ),
-  )
+  event.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => store(req, res))))
 })

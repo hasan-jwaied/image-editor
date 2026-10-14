@@ -71,20 +71,38 @@ def parse_step(text: str) -> Step:
     return Step(op.strip(), params).validate()
 
 
-def recipe_from_json(data: dict[str, Any]) -> list[Step]:
+MAX_STEPS = 32
+"""Same limit as the web app, which also applies it to shared links."""
+
+
+def _step_from_json(item: Any) -> Step:
+    if not isinstance(item, dict) or not isinstance(item.get("op"), str):
+        raise ValueError(f"each step needs an 'op' name, got {item!r}")
+    params = item.get("params", {})
+    if not isinstance(params, dict):
+        raise ValueError(f"{item['op']}: 'params' must be an object")
+    return Step(item["op"], dict(params), item.get("enabled", True) is not False).validate()
+
+
+def recipe_from_json(data: Any) -> list[Step]:
+    if not isinstance(data, dict):
+        raise ValueError("a recipe is a JSON object with 'version' and 'steps'")
     if data.get("version", RECIPE_VERSION) != RECIPE_VERSION:
         raise ValueError(f"unsupported recipe version {data.get('version')!r}")
     steps = data.get("steps")
     if not isinstance(steps, list):
         raise ValueError("recipe must contain a 'steps' list")
-    return [
-        Step(s["op"], dict(s.get("params", {})), bool(s.get("enabled", True))).validate()
-        for s in steps
-    ]
+    if len(steps) > MAX_STEPS:
+        raise ValueError(f"a recipe has at most {MAX_STEPS} steps")
+    return [_step_from_json(item) for item in steps]
 
 
 def load_recipe(path: str | Path) -> list[Step]:
-    return recipe_from_json(json.loads(Path(path).read_text(encoding="utf-8")))
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{path} is not valid JSON: {exc}") from None
+    return recipe_from_json(data)
 
 
 def recipe_to_json(steps: list[Step]) -> dict[str, Any]:

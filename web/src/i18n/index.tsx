@@ -1,17 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ar } from './ar'
 import { en, type MessageKey } from './en'
 import { he } from './he'
 
-export type Lang = 'en' | 'ar' | 'he'
+export type Lang = 'en' | 'he'
 export const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'en', label: 'English' },
-  { id: 'ar', label: 'العربية' },
   { id: 'he', label: 'עברית' },
 ]
 
-const MESSAGES: Record<Lang, Record<MessageKey, string>> = { en, ar, he }
-const RTL = new Set<Lang>(['ar', 'he'])
+const MESSAGES: Record<Lang, Record<MessageKey, string>> = { en, he }
 const STORAGE_KEY = 'pixel-lab:lang'
 
 type Vars = Record<string, string | number>
@@ -21,8 +18,6 @@ interface I18n {
   dir: 'ltr' | 'rtl'
   setLang: (l: Lang) => void
   t: (key: MessageKey, vars?: Vars) => string
-  /** Has a translation key (for dynamic keys like `param.<op>.<name>`). */
-  has: (key: string) => key is MessageKey
   num: (n: number, digits?: number) => string
 }
 
@@ -31,17 +26,17 @@ const Ctx = createContext<I18n | null>(null)
 function initialLang(): Lang {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'en' || stored === 'ar' || stored === 'he') return stored
+    if (stored === 'en' || stored === 'he') return stored
   } catch {
     /* storage unavailable (private mode, sandbox): fall through */
   }
   const nav = (typeof navigator !== 'undefined' ? navigator.language : 'en').slice(0, 2)
-  return nav === 'ar' || nav === 'he' ? nav : 'en'
+  return nav === 'he' ? 'he' : 'en'
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(initialLang)
-  const dir = RTL.has(lang) ? 'rtl' : 'ltr'
+  const dir = lang === 'he' ? 'rtl' : 'ltr'
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -58,14 +53,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<I18n>(() => {
-    // Latin digits in every language: values here are code-adjacent (pixels, ms, kernels).
     const formatters = new Map<number, Intl.NumberFormat>()
     const fmt = (digits: number) => {
       if (!formatters.has(digits)) {
-        formatters.set(
-          digits,
-          new Intl.NumberFormat(`${lang}-u-nu-latn`, { maximumFractionDigits: digits, minimumFractionDigits: 0 }),
-        )
+        formatters.set(digits, new Intl.NumberFormat(lang, { maximumFractionDigits: digits, minimumFractionDigits: 0 }))
       }
       return formatters.get(digits)!
     }
@@ -74,10 +65,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       lang,
       dir,
       setLang,
-      has: (key: string): key is MessageKey => key in en,
       t: (key, vars) => {
-        const template = messages[key] ?? en[key] ?? key
-        return vars ? template.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m)) : template
+        const template = messages[key] ?? key
+        return vars
+          ? template.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m))
+          : template
       },
       num: (n, digits = 1) => fmt(digits).format(n),
     }

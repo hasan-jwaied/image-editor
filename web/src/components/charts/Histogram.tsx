@@ -1,11 +1,20 @@
 import { useState, type PointerEvent } from 'react'
 import { useI18n } from '../../i18n'
+import { Tooltip } from './Tooltip'
 import { useWidth } from './useWidth'
 
 const M = { top: 6, right: 8, bottom: 20, left: 8 }
 
 /** 256-bin histogram as a washed area with a 2px top line; hover for exact counts. */
-export function Histogram({ title, counts, height = 96 }: { title: string; counts: ArrayLike<number>; height?: number }) {
+export function Histogram({
+  title,
+  counts,
+  height = 96,
+}: {
+  title: string
+  counts: ArrayLike<number>
+  height?: number
+}) {
   const { t, num } = useI18n()
   const [ref, width] = useWidth<HTMLDivElement>()
   const [active, setActive] = useState<number | null>(null)
@@ -34,22 +43,38 @@ export function Histogram({ title, counts, height = 96 }: { title: string; count
           <path d={line} fill="none" stroke="var(--series-1)" strokeWidth={1.5} strokeLinejoin="round" />
           <line className="axis" x1={M.left} x2={M.left + plotW} y1={M.top + plotH} y2={M.top + plotH} />
           {[0, 128, 255].map((v) => (
-            <text key={v} className="tick" x={sx(v)} y={height - 5} textAnchor={v === 0 ? 'start' : v === 255 ? 'end' : 'middle'}>
+            <text
+              key={v}
+              className="tick"
+              x={sx(v)}
+              y={height - 5}
+              textAnchor={v === 0 ? 'start' : v === 255 ? 'end' : 'middle'}
+            >
               {v}
             </text>
           ))}
-          {active !== null && <line className="crosshair" x1={sx(active)} x2={sx(active)} y1={M.top} y2={M.top + plotH} />}
-          <rect x={M.left} y={M.top} width={plotW} height={plotH} fill="transparent" onPointerMove={onMove} onPointerLeave={() => setActive(null)} />
+          {active !== null && (
+            <line className="crosshair" x1={sx(active)} x2={sx(active)} y1={M.top} y2={M.top + plotH} />
+          )}
+          <rect
+            x={M.left}
+            y={M.top}
+            width={plotW}
+            height={plotH}
+            fill="transparent"
+            onPointerMove={onMove}
+            onPointerLeave={() => setActive(null)}
+          />
         </svg>
         {active !== null && (
-          <div className="tooltip" style={{ left: sx(active), top: 0, transform: active > 160 ? 'translateX(calc(-100% - 10px))' : 'translateX(10px)' }}>
+          <Tooltip x={sx(active)} flip={active > 160}>
             <div className="tooltip-row">
               <strong>{num(counts[active], 0)}</strong>
               <span className="muted">
                 {t('explain.count')} · {t('explain.level')} {active}
               </span>
             </div>
-          </div>
+          </Tooltip>
         )}
       </div>
     </figure>

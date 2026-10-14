@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useI18n } from '../../i18n'
+import { blurSeries } from '../../lib/blurSeries'
 import { formatMs } from '../../lib/labels'
 import type { EngineClient } from '../../worker/client'
 import type { RaceResult } from '../../worker/protocol'
@@ -42,11 +43,7 @@ export function Race({ client, stepIndex }: { client: EngineClient; stepIndex: n
             xLabel={t('explain.radius')}
             yLabel={t('explain.time')}
             formatY={(v) => formatMs(num, v)}
-            series={[
-              { id: 'sat', label: t('explain.raceSat'), color: 'var(--series-1)', values: result.ms.sat.map((v) => Math.max(v, 0.1)) },
-              { id: 'separable', label: t('explain.raceSeparable'), color: 'var(--series-2)', values: result.ms.separable.map((v) => Math.max(v, 0.1)) },
-              { id: 'naive', label: t('explain.raceNaive'), color: 'var(--series-3)', values: result.ms.naive.map((v) => (v === null ? null : Math.max(v, 0.1))) },
-            ]}
+            series={blurSeries(t, result.ms)}
             height={200}
           />
           <p className="small muted">{t('explain.raceNote', { w: result.image[0], h: result.image[1] })}</p>

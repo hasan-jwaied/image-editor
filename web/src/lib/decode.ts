@@ -1,6 +1,5 @@
+import { MAX_PIXELS } from '../engine/geometry'
 import { fromRGBA, type Img } from '../engine/image'
-
-const MAX_MEGAPIXELS = 50
 
 export class DecodeError extends Error {
   constructor(
@@ -40,17 +39,16 @@ async function load(blob: Blob): Promise<Source> {
  * The browser decodes the file and does the initial downscale (I/O, like
  * Pillow on the Python side); every operation after that is ours.
  */
-export async function decodeImage(blob: Blob, maxSide: number): Promise<{ img: Img; original: [number, number] }> {
+export async function decodeImage(blob: Blob, maxSide: number): Promise<Img> {
   const source = await load(blob)
   const { width, height } = source
-  const mp = (width * height) / 1e6
   if (!width || !height) {
     source.release()
     throw new DecodeError('decode')
   }
-  if (mp > MAX_MEGAPIXELS) {
+  if (width * height > MAX_PIXELS) {
     source.release()
-    throw new DecodeError('tooLarge', Math.round(mp))
+    throw new DecodeError('tooLarge', Math.round((width * height) / 1e6))
   }
   const scale = Math.min(1, maxSide / Math.max(width, height))
   const w = Math.max(1, Math.round(width * scale))
@@ -68,5 +66,5 @@ export async function decodeImage(blob: Blob, maxSide: number): Promise<{ img: I
   ctx.drawImage(source.draw, 0, 0, w, h)
   source.release()
   const data = ctx.getImageData(0, 0, w, h)
-  return { img: fromRGBA(data.data, w, h), original: [width, height] }
+  return fromRGBA(data.data, w, h)
 }
