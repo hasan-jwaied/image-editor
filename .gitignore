@@ -1,1 +1,11 @@
 __pycache__/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+node_modules/
+dist/
+coverage/
+.DS_Store
